@@ -291,7 +291,7 @@
     © 2025 BMS Maschinenfabrik – Testprojekt für Thesis
   </footer>
 
- <script>
+<script>
   function getParameterByName(name) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(name);
@@ -308,13 +308,11 @@
     });
   });
 
-  const contactForm = document.querySelectorAll('.contact-form form')[0];
+  const contactForm = document.querySelector('.contact-form form');
   contactForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // Read signature from URL at send time (no global variable)
-    const signature = getParameterByName('s'); // <-- QR uses &s=...
-
+    const signature = getParameterByName('s'); // QR uses &s=...
     if (!signature) {
       alert("Missing signature in QR URL. Cannot send securely.");
       return;
@@ -335,7 +333,6 @@
       ErrorCode: document.getElementById('ErrorCode').value,
       ErrorText: document.getElementById('ErrorText').value,
       ProLine: document.getElementById('ProLine').value
-      // No HMAC field in JSON
     };
 
     const fullData = { contact: contactData, machine: machineData };
@@ -345,17 +342,30 @@
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-BMS-Signature': signature   // <-- signature goes in a header
+          'X-BMS-Signature': signature
         },
         body: JSON.stringify(fullData)
       });
 
-      const result = await response.json();
+      let result;
+      try {
+        result = await response.json();
+      } catch {
+        result = { message: await response.text() };
+      }
+
+      if (!response.ok) {
+        alert("Backend rejected: " + (result.message || response.status));
+        return;
+      }
+
       alert(result.message);
+
     } catch (err) {
       alert("Error sending data: " + err.message);
     }
   });
 </script>
+
 </body>
 </html>
