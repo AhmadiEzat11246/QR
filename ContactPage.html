@@ -7,7 +7,7 @@
 
   <style>
     :root{
-      --primary:#3948B1;     /* button color */
+      --primary:#3948B1;     /* OK button */
       --headerBlue:#004b93;  /* popup header + page banner */
       --bg:#f5f7fb;
       --card:#ffffff;
@@ -178,7 +178,7 @@
       color:#374151;
     }
 
-    /* ===== Notification Modal (Popup) ===== */
+    /* ===== Notification Modal (Popup) - simplified (NO icon, only OK) ===== */
     .modal-overlay{
       position:fixed;
       inset:0;
@@ -191,7 +191,7 @@
     }
 
     .modal{
-      width:min(520px, 100%);
+      width:min(560px, 100%);
       background:#fff;
       border-radius:14px;
       border:1px solid var(--border);
@@ -199,80 +199,57 @@
       overflow:hidden;
     }
 
-    /* Header is ALWAYS blue to match design */
+    /* Header stays blue, no close icon */
     .modal-header{
       background:var(--headerBlue);
       color:#fff;
-      padding:0.95rem 1.1rem;
-      font-weight:900;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:0.75rem;
+      padding:1.05rem 1.2rem;
     }
 
     .modal-title{
       margin:0;
-      font-size:1.1rem;
+      font-size:1.25rem;
       font-weight:900;
+      letter-spacing:0.2px;
+      text-align:left;
+      line-height:1.15;
     }
 
-    /* Close icon in header */
-    .modal-close{
-      appearance:none;
-      border:none;
-      background:transparent;
-      color:#fff;
-      font-size:1.6rem;
-      line-height:1;
-      cursor:pointer;
-      padding:0.25rem 0.45rem;
-      border-radius:10px;
-    }
-
-    .modal-close:hover{
-      background:rgba(255,255,255,0.15);
-    }
-
-    .modal-close:focus{
-      outline:2px solid rgba(255,255,255,0.75);
-      outline-offset:2px;
-    }
-
-    /* Body text + status accent line */
     .modal-body{
-      padding:1rem 1.1rem;
+      padding:1.05rem 1.2rem 0.9rem 1.2rem;
       color:#111827;
-      border-top:4px solid transparent; /* set by status type */
     }
 
     .modal-body p{
       margin:0;
-      line-height:1.45;
+      line-height:1.55;
       white-space:pre-line;
+      font-size:1.02rem;
     }
 
     .modal-actions{
-      padding:1rem 1.1rem 1.1rem 1.1rem;
+      padding:0.95rem 1.2rem 1.2rem 1.2rem;
       border-top:1px solid var(--border);
     }
 
-    /* OK button stays primary */
+    /* One OK button, optimized size + color */
     .modal-ok{
       width:100%;
-      border-radius:999px;
-      padding:0.85rem 1rem;
-      font-weight:900;
-      border:none;
       background:var(--primary);
       color:#fff;
+      border:none;
+      border-radius:999px;
+      padding:0.95rem 1rem;
+      font-size:1.1rem;
+      font-weight:900;
       cursor:pointer;
     }
 
-    /* Status types (header stays blue; only accent line changes) */
-    .type-success .modal-body{ border-top-color:#2e7d32; }
-    .type-error   .modal-body{ border-top-color:#c62828; }
-    .type-warning .modal-body{ border-top-color:#f59e0b; }
+    .modal-ok:hover{ filter:brightness(0.95); }
+    .modal-ok:focus{
+      outline:2px solid rgba(57,72,177,0.35);
+      outline-offset:3px;
+    }
   </style>
 </head>
 
@@ -357,13 +334,11 @@
 
 </div>
 
-<!-- Notification Popup -->
+<!-- Notification Popup (NO icon, only OK button) -->
 <div id="modalOverlay" class="modal-overlay" aria-hidden="true">
-  <div id="modalBox" class="modal type-success" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-header">
       <h3 id="modalTitle" class="modal-title">Notification</h3>
-      <!-- Close icon is here (in header) -->
-      <button type="button" class="modal-close" id="modalCloseBtn" aria-label="Close">×</button>
     </div>
     <div class="modal-body">
       <p id="modalMsg">...</p>
@@ -385,22 +360,13 @@
   function $(id) { return document.getElementById(id); }
   function trimOrEmpty(v) { return (v ?? "").toString().trim(); }
 
-  // ===== Popup / Modal Notification =====
-  function openModal(type, title, message) {
-    const overlay = $("modalOverlay");
-    const box = $("modalBox");
-
-    // type: "success" | "error" | "warning"
-    box.classList.remove("type-success", "type-error", "type-warning");
-    box.classList.add("type-" + type);
-
+  // Popup open/close
+  function openModal(title, message) {
     $("modalTitle").textContent = title || "Notification";
     $("modalMsg").textContent = message || "";
-
+    const overlay = $("modalOverlay");
     overlay.style.display = "flex";
     overlay.setAttribute("aria-hidden", "false");
-
-    // Focus for keyboard/HMI
     $("modalOkBtn").focus();
   }
 
@@ -410,17 +376,14 @@
     overlay.setAttribute("aria-hidden", "true");
   }
 
-  $("modalCloseBtn").addEventListener("click", closeModal);
   $("modalOkBtn").addEventListener("click", closeModal);
 
-  // Close when clicking outside
-  $("modalOverlay").addEventListener("click", (e) => {
-    if (e.target === $("modalOverlay")) closeModal();
-  });
-
-  // Close on ESC
+  // Optional: close on ESC and outside click (keeps UI simple)
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeModal();
+  });
+  $("modalOverlay").addEventListener("click", (e) => {
+    if (e.target === $("modalOverlay")) closeModal();
   });
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -434,7 +397,6 @@
     const sig = getParam("s");
     if (!sig) {
       openModal(
-        "warning",
         "Invalid QR Code",
         "This QR code is missing a security signature.\nThe URL may be corrupted or incomplete.\nPlease generate a new QR code."
       );
@@ -450,7 +412,6 @@
     const sig = getParam("s");
     if (!sig) {
       openModal(
-        "warning",
         "Invalid QR Code",
         "This QR code is missing a security signature.\nThe URL may be corrupted or incomplete.\nPlease generate a new QR code."
       );
@@ -490,7 +451,6 @@
       if (!r.ok) {
         if (r.status === 400 || r.status === 401 || r.status === 403) {
           openModal(
-            "error",
             "Security Verification Failed",
             serverText
               ? ("The server rejected this request due to invalid or corrupted QR data:\n" + serverText)
@@ -498,7 +458,6 @@
           );
         } else {
           openModal(
-            "error",
             "Request Rejected",
             serverText
               ? ("The server rejected this request:\n" + serverText)
@@ -509,18 +468,15 @@
       }
 
       openModal(
-        "success",
         "Submitted Successfully",
         "Your request has been submitted successfully.\nWe will contact you as soon as possible."
       );
 
-      // Optional reset for user inputs; keep machine data visible
       $("name").value = "";
       $("company").value = "";
 
     } catch (err) {
       openModal(
-        "error",
         "Communication Error",
         "A network error occurred while sending the request.\nPlease check your connection and try again."
       );
