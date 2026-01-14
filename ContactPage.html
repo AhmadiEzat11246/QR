@@ -171,6 +171,7 @@
       cursor:not-allowed;
     }
 
+    /* Fallback status box (kept) */
     #statusBox{
       display:none;
       max-width:980px;
@@ -187,6 +188,96 @@
       background:#f5f5f5;
       margin-top:2rem;
       color:#374151;
+    }
+
+    /* ===== Notification Modal (Popup) ===== */
+    .modal-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.45);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:1rem;
+      z-index:9999;
+    }
+
+    .modal{
+      width:min(520px, 100%);
+      background:#fff;
+      border-radius:14px;
+      border:1px solid var(--border);
+      box-shadow:0 18px 40px rgba(0,0,0,0.22);
+      overflow:hidden;
+    }
+
+    .modal-header{
+      padding:1rem 1.1rem;
+      font-weight:900;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:0.75rem;
+      border-bottom:1px solid var(--border);
+    }
+
+    .modal-title{
+      margin:0;
+      font-size:1.1rem;
+    }
+
+    .modal-close{
+      appearance:none;
+      border:none;
+      background:transparent;
+      font-size:1.4rem;
+      line-height:1;
+      cursor:pointer;
+      padding:0.25rem 0.4rem;
+      border-radius:10px;
+    }
+
+    .modal-close:focus{
+      outline:2px solid #c7d2fe;
+      outline-offset:2px;
+    }
+
+    .modal-body{
+      padding:1rem 1.1rem;
+      color:#111827;
+    }
+
+    .modal-body p{
+      margin:0.2rem 0 0.8rem 0;
+      line-height:1.45;
+    }
+
+    .modal-actions{
+      padding:0 1.1rem 1.1rem 1.1rem;
+    }
+
+    .btn-secondary{
+      width:100%;
+      border-radius:999px;
+      padding:0.8rem 1rem;
+      font-weight:800;
+      border:1px solid var(--border);
+      background:#fff;
+      cursor:pointer;
+    }
+
+    /* Modal type styling */
+    .type-success .modal-header{
+      background:#e8f5e9;
+      color:#1b5e20;
+    }
+    .type-error .modal-header{
+      background:#fdecea;
+      color:#b71c1c;
+    }
+    .type-warning .modal-header{
+      background:#fff7ed;
+      color:#7c2d12;
     }
   </style>
 </head>
@@ -213,7 +304,6 @@
 
 <div class="wrap">
 
-  <!-- Single-column: optional Name + Company (no required fields) -->
   <div class="card">
     <h2>Contact</h2>
 
@@ -221,7 +311,6 @@
       <div class="row two">
         <div>
           <label for="name">Name</label>
-          <!-- NOT required -->
           <input id="name" name="name" maxlength="80" autocomplete="name" />
         </div>
 
@@ -241,7 +330,6 @@
     </form>
   </div>
 
-  <!-- Single-column: Machine data from URL -->
   <div class="card">
     <h2>Machine Data</h2>
 
@@ -277,6 +365,22 @@
 
 <div id="statusBox"></div>
 
+<!-- Notification Popup -->
+<div id="modalOverlay" class="modal-overlay" aria-hidden="true">
+  <div id="modalBox" class="modal type-success" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-header">
+      <h3 id="modalTitle" class="modal-title">Notification</h3>
+      <button type="button" class="modal-close" id="modalCloseBtn" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <p id="modalMsg">...</p>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" id="modalOkBtn">OK</button>
+    </div>
+  </div>
+</div>
+
 <footer>
   © 2025 BMS Maschinenfabrik – Thesis Project
 </footer>
@@ -286,7 +390,9 @@
     return new URLSearchParams(window.location.search).get(name);
   }
   function $(id) { return document.getElementById(id); }
+  function trimOrEmpty(v) { return (v ?? "").toString().trim(); }
 
+  // Fallback inline status (kept)
   function showStatus(msg, ok) {
     const b = $("statusBox");
     b.style.display = "block";
@@ -297,9 +403,43 @@
     b.scrollIntoView({ behavior: "smooth" });
   }
 
-  function trimOrEmpty(v) {
-    return (v ?? "").toString().trim();
+  // ===== Popup / Modal Notification =====
+  function openModal(type, title, message) {
+    const overlay = $("modalOverlay");
+    const box = $("modalBox");
+
+    // type: "success" | "error" | "warning"
+    box.classList.remove("type-success", "type-error", "type-warning");
+    box.classList.add("type-" + type);
+
+    $("modalTitle").textContent = title || "Notification";
+    $("modalMsg").textContent = message || "";
+
+    overlay.style.display = "flex";
+    overlay.setAttribute("aria-hidden", "false");
+
+    // focus for accessibility + HMI keyboard behavior
+    $("modalOkBtn").focus();
   }
+
+  function closeModal() {
+    const overlay = $("modalOverlay");
+    overlay.style.display = "none";
+    overlay.setAttribute("aria-hidden", "true");
+  }
+
+  $("modalCloseBtn").addEventListener("click", closeModal);
+  $("modalOkBtn").addEventListener("click", closeModal);
+
+  // Close modal when clicking outside the box
+  $("modalOverlay").addEventListener("click", (e) => {
+    if (e.target === $("modalOverlay")) closeModal();
+  });
+
+  // Close modal on ESC
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeModal();
+  });
 
   document.addEventListener("DOMContentLoaded", () => {
     // Fill machine parameters from URL (QR code)
@@ -308,10 +448,16 @@
       if (v !== null && v !== undefined && v !== "") $(id).value = v;
     });
 
-    // Early warning if signature is missing (still allows viewing page)
+    // Early warning if signature missing
     const sig = getParam("s");
     if (!sig) {
-      showStatus("Invalid QR code: missing signature parameter (s). Please generate a new QR code.", false);
+      openModal(
+        "warning",
+        "Invalid QR Code",
+        "This QR code is missing a security signature. The URL may be corrupted or incomplete. Please generate a new QR code."
+      );
+      // (Optional fallback)
+      showStatus("Invalid QR code: missing signature parameter (s).", false);
     }
   });
 
@@ -321,14 +467,16 @@
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Signature is still required to protect integrity (backend verification)
     const sig = getParam("s");
     if (!sig) {
-      showStatus("Invalid QR code. Please generate a new one.", false);
+      openModal(
+        "warning",
+        "Invalid QR Code",
+        "This QR code is missing a security signature. The URL may be corrupted or incomplete. Please generate a new QR code."
+      );
       return;
     }
 
-    // Name and Company are OPTIONAL (no blocking validation)
     const data = {
       contact: {
         Name: trimOrEmpty($("name").value),
@@ -356,25 +504,48 @@
         body: JSON.stringify(data)
       });
 
+      // read response text (may contain backend error detail)
       let serverText = "";
       try { serverText = await r.text(); } catch {}
 
       if (!r.ok) {
-        const msg = serverText
-          ? ("Request rejected by server: " + serverText)
-          : ("Request rejected by server (HTTP " + r.status + ").");
-        showStatus(msg, false);
+        // Security / corruption messages are typically 400/401/403
+        if (r.status === 400 || r.status === 401 || r.status === 403) {
+          openModal(
+            "error",
+            "Security Verification Failed",
+            serverText
+              ? ("The server rejected this request due to invalid or corrupted QR data: " + serverText)
+              : "The server rejected this request because the QR data or signature is invalid. Please generate a new QR code."
+          );
+        } else {
+          openModal(
+            "error",
+            "Request Rejected",
+            serverText
+              ? ("The server rejected this request: " + serverText)
+              : ("The server rejected this request (HTTP " + r.status + ").")
+          );
+        }
         return;
       }
 
-      showStatus("Message sent successfully. We will contact you shortly.", true);
+      openModal(
+        "success",
+        "Submitted Successfully",
+        "Your request has been submitted successfully. We will contact you as soon as possible."
+      );
 
-      // Reset only user inputs; keep machine data visible
+      // Keep machine data visible; optional reset for contact inputs
       $("name").value = "";
       $("company").value = "";
 
     } catch (err) {
-      showStatus("Communication error. Please try again later.", false);
+      openModal(
+        "error",
+        "Communication Error",
+        "A network error occurred while sending the request. Please check your connection and try again."
+      );
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = "Send";
