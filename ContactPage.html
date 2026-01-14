@@ -7,8 +7,8 @@
 
   <style>
     :root{
-      --primary:#3948B1;     /* OK button */
-      --headerBlue:#004b93;  /* popup header + page banner */
+      --primary:#3948B1;     /* main button color */
+      --headerBlue:#004b93;  /* banner + popup header */
       --bg:#f5f7fb;
       --card:#ffffff;
       --muted:#6b7280;
@@ -178,8 +178,8 @@
       color:#374151;
     }
 
-    /* ===== Notification Modal (Popup) - simplified (NO icon, only OK) ===== */
-    .modal-overlay{
+    /* ===== Clean Notification Popup (no icons, only OK) ===== */
+    .notice-overlay{
       position:fixed;
       inset:0;
       background:rgba(0,0,0,0.45);
@@ -190,66 +190,79 @@
       z-index:9999;
     }
 
-    .modal{
+    .notice-card{
       width:min(560px, 100%);
       background:#fff;
-      border-radius:14px;
+      border-radius:16px;
       border:1px solid var(--border);
       box-shadow:0 18px 40px rgba(0,0,0,0.22);
       overflow:hidden;
     }
 
-    /* Header stays blue, no close icon */
-    .modal-header{
+    .notice-header{
       background:var(--headerBlue);
       color:#fff;
-      padding:1.05rem 1.2rem;
+      padding:1rem 1.2rem;
+      display:flex;
+      align-items:center;
+      gap:0.8rem;
     }
 
-    .modal-title{
+    .notice-brand{
+      width:10px;
+      height:28px;
+      border-radius:999px;
+      background:#fff;
+      opacity:0.9;
+    }
+
+    .notice-title{
       margin:0;
       font-size:1.25rem;
       font-weight:900;
       letter-spacing:0.2px;
-      text-align:left;
-      line-height:1.15;
     }
 
-    .modal-body{
-      padding:1.05rem 1.2rem 0.9rem 1.2rem;
-      color:#111827;
+    .notice-body{
+      padding:1.1rem 1.2rem 0.95rem 1.2rem;
+      border-top:5px solid transparent; /* status accent */
     }
 
-    .modal-body p{
+    .notice-msg{
       margin:0;
-      line-height:1.55;
-      white-space:pre-line;
       font-size:1.02rem;
+      line-height:1.6;
+      color:#111827;
+      white-space:pre-line;
     }
 
-    .modal-actions{
-      padding:0.95rem 1.2rem 1.2rem 1.2rem;
+    .notice-actions{
+      padding:1rem 1.2rem 1.2rem 1.2rem;
       border-top:1px solid var(--border);
     }
 
-    /* One OK button, optimized size + color */
-    .modal-ok{
+    .notice-ok{
       width:100%;
-      background:var(--primary);
-      color:#fff;
       border:none;
       border-radius:999px;
       padding:0.95rem 1rem;
-      font-size:1.1rem;
+      font-size:1.08rem;
       font-weight:900;
       cursor:pointer;
+      background:var(--primary);
+      color:#fff;
     }
 
-    .modal-ok:hover{ filter:brightness(0.95); }
-    .modal-ok:focus{
+    .notice-ok:hover{ filter:brightness(0.95); }
+    .notice-ok:focus{
       outline:2px solid rgba(57,72,177,0.35);
       outline-offset:3px;
     }
+
+    /* Status types: only accent line changes */
+    .notice-success .notice-body{ border-top-color:#2e7d32; }
+    .notice-error   .notice-body{ border-top-color:#c62828; }
+    .notice-warning .notice-body{ border-top-color:#f59e0b; }
   </style>
 </head>
 
@@ -334,17 +347,20 @@
 
 </div>
 
-<!-- Notification Popup (NO icon, only OK button) -->
-<div id="modalOverlay" class="modal-overlay" aria-hidden="true">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal-header">
-      <h3 id="modalTitle" class="modal-title">Notification</h3>
+<!-- Clean Notification Popup -->
+<div id="noticeOverlay" class="notice-overlay" aria-hidden="true">
+  <div id="noticeCard" class="notice-card notice-success" role="dialog" aria-modal="true" aria-labelledby="noticeTitle">
+    <div class="notice-header">
+      <div class="notice-brand" aria-hidden="true"></div>
+      <h3 id="noticeTitle" class="notice-title">Submitted</h3>
     </div>
-    <div class="modal-body">
-      <p id="modalMsg">...</p>
+
+    <div class="notice-body">
+      <p id="noticeMsg" class="notice-msg">Your request has been submitted successfully.</p>
     </div>
-    <div class="modal-actions">
-      <button type="button" class="modal-ok" id="modalOkBtn">OK</button>
+
+    <div class="notice-actions">
+      <button type="button" id="noticeOkBtn" class="notice-ok">OK</button>
     </div>
   </div>
 </div>
@@ -360,30 +376,35 @@
   function $(id) { return document.getElementById(id); }
   function trimOrEmpty(v) { return (v ?? "").toString().trim(); }
 
-  // Popup open/close
-  function openModal(title, message) {
-    $("modalTitle").textContent = title || "Notification";
-    $("modalMsg").textContent = message || "";
-    const overlay = $("modalOverlay");
+  function openNotice(type, title, message) {
+    const overlay = $("noticeOverlay");
+    const card = $("noticeCard");
+
+    card.classList.remove("notice-success", "notice-error", "notice-warning");
+    card.classList.add("notice-" + type);
+
+    $("noticeTitle").textContent = title || "Notification";
+    $("noticeMsg").textContent = message || "";
+
     overlay.style.display = "flex";
     overlay.setAttribute("aria-hidden", "false");
-    $("modalOkBtn").focus();
+    $("noticeOkBtn").focus();
   }
 
-  function closeModal() {
-    const overlay = $("modalOverlay");
+  function closeNotice() {
+    const overlay = $("noticeOverlay");
     overlay.style.display = "none";
     overlay.setAttribute("aria-hidden", "true");
   }
 
-  $("modalOkBtn").addEventListener("click", closeModal);
+  $("noticeOkBtn").addEventListener("click", closeNotice);
 
-  // Optional: close on ESC and outside click (keeps UI simple)
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeModal();
+  // Optional: close by clicking outside or ESC
+  $("noticeOverlay").addEventListener("click", (e) => {
+    if (e.target === $("noticeOverlay")) closeNotice();
   });
-  $("modalOverlay").addEventListener("click", (e) => {
-    if (e.target === $("modalOverlay")) closeModal();
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeNotice();
   });
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -396,9 +417,10 @@
     // Early warning if signature missing
     const sig = getParam("s");
     if (!sig) {
-      openModal(
+      openNotice(
+        "warning",
         "Invalid QR Code",
-        "This QR code is missing a security signature.\nThe URL may be corrupted or incomplete.\nPlease generate a new QR code."
+        "This QR code is missing the security signature.\nThe URL may be corrupted or incomplete.\nPlease generate a new QR code."
       );
     }
   });
@@ -411,9 +433,10 @@
 
     const sig = getParam("s");
     if (!sig) {
-      openModal(
+      openNotice(
+        "warning",
         "Invalid QR Code",
-        "This QR code is missing a security signature.\nThe URL may be corrupted or incomplete.\nPlease generate a new QR code."
+        "This QR code is missing the security signature.\nThe URL may be corrupted or incomplete.\nPlease generate a new QR code."
       );
       return;
     }
@@ -450,14 +473,16 @@
 
       if (!r.ok) {
         if (r.status === 400 || r.status === 401 || r.status === 403) {
-          openModal(
+          openNotice(
+            "error",
             "Security Verification Failed",
             serverText
               ? ("The server rejected this request due to invalid or corrupted QR data:\n" + serverText)
-              : "The server rejected this request because the QR data or signature is invalid.\nPlease generate a new QR code."
+              : "The server rejected this request because the QR data or signature is invalid.\nThe URL may be corrupted.\nPlease generate a new QR code."
           );
         } else {
-          openModal(
+          openNotice(
+            "error",
             "Request Rejected",
             serverText
               ? ("The server rejected this request:\n" + serverText)
@@ -467,16 +492,19 @@
         return;
       }
 
-      openModal(
+      openNotice(
+        "success",
         "Submitted Successfully",
         "Your request has been submitted successfully.\nWe will contact you as soon as possible."
       );
 
+      // Reset user inputs only (machine data stays visible)
       $("name").value = "";
       $("company").value = "";
 
     } catch (err) {
-      openModal(
+      openNotice(
+        "error",
         "Communication Error",
         "A network error occurred while sending the request.\nPlease check your connection and try again."
       );
