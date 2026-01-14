@@ -6,152 +6,187 @@
   <title>BMS Kontakt</title>
 
   <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      background-color: #fff;
-      color: #333;
+    :root{
+      --primary:#3948B1;
+      --banner:#004b93;
+      --bg:#f5f7fb;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --border:#e5e7eb;
     }
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 2rem;
-      background: white;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      flex-wrap: wrap;
+    body{
+      font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin:0;
+      background:#fff;
+      color:#111827;
     }
 
-    .logo-area {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
+    header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:1rem 1.25rem;
+      background:white;
+      box-shadow:0 2px 4px rgba(0,0,0,0.08);
+      position:sticky;
+      top:0;
+      z-index:10;
+      flex-wrap:wrap;
+      gap:0.75rem;
     }
 
-    .logo-area img {
-      height: 36px;
+    .logo-area{
+      display:flex;
+      align-items:center;
+      gap:0.8rem;
+      min-width: 220px;
     }
 
-    .logo-area h3 {
-      font-size: 1rem;
-      color: #3948B1;
+    .logo-area img{ height:36px; }
+
+    .logo-area h3{
+      margin:0;
+      font-size:1rem;
+      color:var(--primary);
+      font-weight:700;
+      letter-spacing:0.2px;
     }
 
-    nav ul {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      list-style: none;
-      margin: 0;
-      padding: 0;
+    nav ul{
+      display:flex;
+      flex-wrap:wrap;
+      gap:1rem;
+      list-style:none;
+      margin:0;
+      padding:0;
     }
 
-    nav ul li a {
-      text-decoration: none;
-      color: #333;
-      font-weight: 500;
+    nav ul li a{
+      text-decoration:none;
+      color:#111827;
+      font-weight:500;
     }
 
-    .btn-kontakt {
-      background-color: #3948B1;
-      color: white;
-      padding: 0.6rem 1.2rem;
-      border-radius: 25px;
-      text-decoration: none;
-      font-weight: bold;
+    .hero{
+      text-align:center;
+      background:var(--bg);
+      padding:1.25rem;
     }
 
-    .hero {
-      text-align: center;
-      background-color: #f5f7fb;
-      padding: 1.5rem;
+    .title-banner{
+      background:var(--banner);
+      color:white;
+      font-size:1.6rem;
+      font-weight:800;
+      padding:1.25rem 1rem;
+      border-radius:10px;
+      margin:0 auto;
+      max-width:980px;
+      line-height:1.15;
     }
 
-    .title-banner {
-      background-color: #004b93;
-      color: white;
-      font-size: 2rem;
-      font-weight: bold;
-      padding: 1.5rem;
-      border-radius: 8px;
-      margin: 0 auto;
-      max-width: 900px;
+    .wrap{
+      max-width:980px;
+      margin:0 auto;
+      padding:1.25rem;
     }
 
-    .contact-section {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1.5rem;
-      padding: 1.5rem;
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:12px;
+      box-shadow:0 6px 14px rgba(0,0,0,0.06);
+      padding:1.25rem;
     }
 
-    .contact-form {
-      flex: 1;
-      min-width: 300px;
-      max-width: 500px;
-      background-color: #f9f9f9;
-      padding: 1.5rem;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    .card + .card{ margin-top:1rem; }
+
+    .card h2{
+      margin:0 0 1rem 0;
+      color:var(--primary);
+      font-size:1.15rem;
+      font-weight:800;
     }
 
-    .contact-form h2 {
-      color: #3948B1;
-      text-align: center;
-      margin-bottom: 1rem;
+    .grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:0.9rem;
     }
 
-    .contact-form label {
-      font-weight: 600;
-      display: block;
-      margin-bottom: 0.3rem;
+    label{
+      font-weight:700;
+      display:block;
+      margin-bottom:0.35rem;
+      color:#111827;
     }
 
-    .contact-form input,
-    .contact-form textarea {
-      width: 100%;
-      padding: 0.8rem;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      margin-bottom: 1rem;
+    input{
+      width:100%;
+      padding:0.8rem;
+      border-radius:8px;
+      border:1px solid #d1d5db;
+      box-sizing:border-box;
+      font-size:1rem;
     }
 
-    .contact-form button {
-      background-color: #3948B1;
-      color: white;
-      border: none;
-      padding: 0.8rem;
-      border-radius: 25px;
-      font-size: 1.1rem;
-      cursor: pointer;
-      width: 100%;
+    input[readonly]{
+      background:#f1f3f6;
+      color:#374151;
     }
 
-    .contact-info {
-      text-align: center;
-      line-height: 1.6;
+    .hint{
+      margin-top:0.25rem;
+      font-size:0.9rem;
+      color:var(--muted);
     }
 
-    #statusBox {
-      display: none;
-      max-width: 900px;
-      margin: 20px auto;
+    .row{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:0.9rem;
+    }
+
+    @media (min-width: 720px){
+      .row.two{
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    button{
+      background:var(--primary);
+      color:white;
+      border:none;
+      padding:0.85rem 1rem;
+      border-radius:999px;
+      font-size:1.05rem;
+      font-weight:800;
+      cursor:pointer;
+      width:100%;
+    }
+
+    button[disabled]{
+      opacity:0.7;
+      cursor:not-allowed;
+    }
+
+    #statusBox{
+      display:none;
+      max-width:980px;
+      margin: 14px auto 0 auto;
       padding: 14px 18px;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 1rem;
     }
 
-    footer {
-      text-align: center;
-      padding: 1.2rem;
-      font-size: 0.9rem;
-      background-color: #f5f5f5;
-      margin-top: 2rem;
+    footer{
+      text-align:center;
+      padding:1.2rem;
+      font-size:0.9rem;
+      background:#f5f5f5;
+      margin-top:2rem;
+      color:#374151;
     }
   </style>
 </head>
@@ -176,52 +211,69 @@
   <div class="title-banner">Report Machine Malfunction</div>
 </section>
 
-<section class="contact-section">
+<div class="wrap">
 
-  <div class="contact-form">
-    <h2>Contact Form</h2>
-    <form>
-      <label>Vorname*</label>
-      <input id="vorname" required>
+  <!-- Single-column: optional Name + Company (no required fields) -->
+  <div class="card">
+    <h2>Contact</h2>
 
-      <label>Nachname*</label>
-      <input id="nachname" required>
+    <form id="contactForm" novalidate>
+      <div class="row two">
+        <div>
+          <label for="name">Name</label>
+          <!-- NOT required -->
+          <input id="name" name="name" maxlength="80" autocomplete="name" />
+        </div>
 
-      <label>E-Mail*</label>
-      <input type="email" id="email" required>
+        <div>
+          <label for="company">Company</label>
+          <input id="company" name="company" maxlength="120" autocomplete="organization" />
+        </div>
+      </div>
 
-      <label>Unternehmen</label>
-      <input id="unternehmen">
+      <div class="hint">
+        Machine data below is filled automatically from the QR code parameters.
+      </div>
 
-      <label>Telefon</label>
-      <input id="telefon">
-
-      <label>Nachricht</label>
-      <textarea id="nachricht"></textarea>
-
-      <button type="submit">Senden</button>
+      <div style="margin-top:1rem;">
+        <button id="submitBtn" type="submit">Send</button>
+      </div>
     </form>
   </div>
 
-  <div class="contact-form">
+  <!-- Single-column: Machine data from URL -->
+  <div class="card">
     <h2>Machine Data</h2>
-    <label>Machine Name</label>
-    <input id="MachineName">
 
-    <label>Machine ID</label>
-    <input id="MachineID">
+    <div class="grid">
+      <div>
+        <label for="MachineName">Machine Name</label>
+        <input id="MachineName" maxlength="120" readonly>
+      </div>
 
-    <label>Error Code</label>
-    <input id="ErrorCode">
+      <div>
+        <label for="MachineID">Machine ID</label>
+        <input id="MachineID" maxlength="120" readonly>
+      </div>
 
-    <label>Error Text</label>
-    <input id="ErrorText">
+      <div>
+        <label for="ErrorCode">Error Code</label>
+        <input id="ErrorCode" maxlength="120" readonly>
+      </div>
 
-    <label>Production Line</label>
-    <input id="ProLine">
+      <div>
+        <label for="ErrorText">Error Text</label>
+        <input id="ErrorText" maxlength="400" readonly>
+      </div>
+
+      <div>
+        <label for="ProLine">Production Line</label>
+        <input id="ProLine" maxlength="120" readonly>
+      </div>
+    </div>
   </div>
 
-</section>
+</div>
 
 <div id="statusBox"></div>
 
@@ -233,53 +285,66 @@
   function getParam(name) {
     return new URLSearchParams(window.location.search).get(name);
   }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    ['MachineName','MachineID','ErrorCode','ErrorText','ProLine']
-      .forEach(id => {
-        const v = getParam(id);
-        if (v) document.getElementById(id).value = v;
-      });
-  });
+  function $(id) { return document.getElementById(id); }
 
   function showStatus(msg, ok) {
-    const b = document.getElementById("statusBox");
+    const b = $("statusBox");
     b.style.display = "block";
     b.textContent = msg;
     b.style.background = ok ? "#e8f5e9" : "#fdecea";
     b.style.border = ok ? "1px solid #2e7d32" : "1px solid #c62828";
     b.style.color = ok ? "#1b5e20" : "#b71c1c";
-    b.scrollIntoView({behavior:"smooth"});
+    b.scrollIntoView({ behavior: "smooth" });
   }
 
-  const form = document.querySelector(".contact-form form");
+  function trimOrEmpty(v) {
+    return (v ?? "").toString().trim();
+  }
 
-  form.addEventListener("submit", async e => {
+  document.addEventListener("DOMContentLoaded", () => {
+    // Fill machine parameters from URL (QR code)
+    ["MachineName", "MachineID", "ErrorCode", "ErrorText", "ProLine"].forEach(id => {
+      const v = getParam(id);
+      if (v !== null && v !== undefined && v !== "") $(id).value = v;
+    });
+
+    // Early warning if signature is missing (still allows viewing page)
+    const sig = getParam("s");
+    if (!sig) {
+      showStatus("Invalid QR code: missing signature parameter (s). Please generate a new QR code.", false);
+    }
+  });
+
+  const form = $("contactForm");
+  const submitBtn = $("submitBtn");
+
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    // Signature is still required to protect integrity (backend verification)
     const sig = getParam("s");
     if (!sig) {
       showStatus("Invalid QR code. Please generate a new one.", false);
       return;
     }
 
+    // Name and Company are OPTIONAL (no blocking validation)
     const data = {
       contact: {
-        Vorname: vorname.value,
-        Nachname: nachname.value,
-        Email: email.value,
-        Unternehmen: unternehmen.value,
-        Telefon: telefon.value,
-        Nachricht: nachricht.value
+        Name: trimOrEmpty($("name").value),
+        Company: trimOrEmpty($("company").value)
       },
       machine: {
-        MachineName: MachineName.value,
-        MachineID: MachineID.value,
-        ErrorCode: ErrorCode.value,
-        ErrorText: ErrorText.value,
-        ProLine: ProLine.value
+        MachineName: trimOrEmpty($("MachineName").value),
+        MachineID: trimOrEmpty($("MachineID").value),
+        ErrorCode: trimOrEmpty($("ErrorCode").value),
+        ErrorText: trimOrEmpty($("ErrorText").value),
+        ProLine: trimOrEmpty($("ProLine").value)
       }
     };
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Sending...";
 
     try {
       const r = await fetch("https://bms-backend-d1v5.onrender.com/log", {
@@ -291,20 +356,28 @@
         body: JSON.stringify(data)
       });
 
+      let serverText = "";
+      try { serverText = await r.text(); } catch {}
+
       if (!r.ok) {
-        showStatus("Request rejected by server.", false);
+        const msg = serverText
+          ? ("Request rejected by server: " + serverText)
+          : ("Request rejected by server (HTTP " + r.status + ").");
+        showStatus(msg, false);
         return;
       }
 
-      showStatus(
-        "Your message has been successfully received. We will contact you shortly.",
-        true
-      );
+      showStatus("Message sent successfully. We will contact you shortly.", true);
 
-      form.reset();
+      // Reset only user inputs; keep machine data visible
+      $("name").value = "";
+      $("company").value = "";
 
-    } catch {
+    } catch (err) {
       showStatus("Communication error. Please try again later.", false);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Send";
     }
   });
 </script>
