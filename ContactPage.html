@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,22 +7,22 @@
 
   <style>
     :root{
-      --primary:#3948B1;     /* main button color */
-      --brandBlue:#004b93;   /* banner + brand */
+      --primary:#3948B1;   /* page buttons */
+      --brandBlue:#004b93; /* banner */
       --bg:#f5f7fb;
       --card:#ffffff;
-      --muted:#6b7280;
       --border:#e5e7eb;
 
-      --ok:#2563eb;          /* optimized “action blue” */
-      --success:#16a34a;
-      --error:#dc2626;
-      --warning:#f59e0b;
+      /* popup */
+      --popupActionBlue:#2563eb;
+      --successGreen:#16a34a;
+      --errorRed:#dc2626;
     }
 
+    /* ===== Base ===== */
     body{
-      font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin:0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       background:#fff;
       color:#111827;
     }
@@ -114,12 +114,6 @@
       font-weight:800;
     }
 
-    .grid{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:0.9rem;
-    }
-
     label{
       font-weight:700;
       display:block;
@@ -141,12 +135,6 @@
       color:#374151;
     }
 
-    .hint{
-      margin-top:0.25rem;
-      font-size:0.9rem;
-      color:var(--muted);
-    }
-
     .row{
       display:grid;
       grid-template-columns:1fr;
@@ -155,6 +143,12 @@
 
     @media (min-width:720px){
       .row.two{ grid-template-columns:1fr 1fr; }
+    }
+
+    .hint{
+      margin-top:0.25rem;
+      font-size:0.9rem;
+      color:#6b7280;
     }
 
     button{
@@ -183,7 +177,7 @@
       color:#374151;
     }
 
-    /* ===== Fullscreen “Success Page”-style Popup (like your example) ===== */
+    /* ===== Popup (like your example) ===== */
     .popup-overlay{
       position:fixed;
       inset:0;
@@ -191,74 +185,67 @@
       display:none;
       align-items:center;
       justify-content:center;
-      padding:1rem;
       z-index:9999;
+      padding:1rem;
     }
 
     .popup-card{
-      width:min(720px, 100%);
+      width:min(640px, 92%);
       background:#fff;
       border-radius:18px;
-      box-shadow:0 22px 55px rgba(0,0,0,0.25);
-      border:1px solid rgba(229,231,235,0.9);
-      padding:2.1rem 1.4rem 1.6rem 1.4rem;
+      padding:2.2rem 1.6rem 1.9rem;
       text-align:center;
+      box-shadow:0 24px 55px rgba(0,0,0,0.25);
+      border:1px solid rgba(229,231,235,0.9);
     }
 
     .popup-icon{
-      width:92px;
-      height:92px;
-      margin:0 auto 1.1rem auto;
+      width:90px;
+      height:90px;
+      margin-bottom:1.2rem;
       filter: drop-shadow(0 10px 18px rgba(0,0,0,0.14));
     }
 
     .popup-title{
-      margin:0 0 0.75rem 0;
+      margin:0 0 0.6rem;
       font-size:2rem;
-      font-weight:900;
-      letter-spacing:0.2px;
-      color:#111827;
+      font-weight:800;
     }
 
+    /* Title color changes by result */
+    .popup-success .popup-title{ color:var(--successGreen); }
+    .popup-error   .popup-title{ color:var(--errorRed); }
+
     .popup-text{
-      margin:0 auto 1.6rem auto;
+      margin:0 auto 1.8rem;
       max-width:60ch;
-      line-height:1.7;
       font-size:1.05rem;
+      line-height:1.7;
       color:#374151;
       white-space:pre-line;
     }
 
+    /* Smaller Home Page button */
     .popup-btn{
-      display:inline-block;
-      min-width: 220px;
-      background:var(--ok);
+      background:var(--popupActionBlue);
       color:#fff;
       border:none;
-      border-radius:10px;
-      padding:0.95rem 1.2rem;
-      font-size:1.15rem;
-      font-weight:900;
+      border-radius:8px;
+      padding:0.65rem 1.4rem;
+      font-size:1rem;
+      font-weight:700;
       cursor:pointer;
-      box-shadow:0 10px 22px rgba(37,99,235,0.25);
+      min-width:150px;
+      width:auto; /* not full-width */
+      box-shadow:0 8px 18px rgba(37,99,235,0.3);
     }
 
-    .popup-btn:hover{ filter:brightness(0.96); }
-    .popup-btn:focus{
-      outline:3px solid rgba(37,99,235,0.25);
-      outline-offset:3px;
-    }
+    .popup-btn:hover{ filter:brightness(0.95); }
 
-    /* Status theme (subtle, no extra icons/buttons) */
-    .popup-success .popup-title{ color:#111827; }
-    .popup-error   .popup-btn{ background:var(--error); box-shadow:0 10px 22px rgba(220,38,38,0.20); }
-    .popup-warning .popup-btn{ background:var(--warning); box-shadow:0 10px 22px rgba(245,158,11,0.22); }
-
-    @media (max-width: 420px){
+    @media (max-width:480px){
       .popup-title{ font-size:1.6rem; }
-      .popup-icon{ width:80px; height:80px; }
-      .popup-card{ padding:1.7rem 1.1rem 1.3rem 1.1rem; }
-      .popup-btn{ width:100%; min-width:auto; }
+      .popup-icon{ width:75px; height:75px; }
+      .popup-btn{ min-width:140px; }
     }
   </style>
 </head>
@@ -314,7 +301,7 @@
   <div class="card">
     <h2>Machine Data</h2>
 
-    <div class="grid">
+    <div class="row">
       <div>
         <label for="MachineName">Machine Name</label>
         <input id="MachineName" maxlength="120" readonly>
@@ -344,31 +331,28 @@
 
 </div>
 
-<!-- Popup (design like your example: big icon, big title, centered text, one button) -->
+<!-- ===== Popup Overlay ===== -->
 <div id="popupOverlay" class="popup-overlay" aria-hidden="true">
-  <div id="popupCard" class="popup-card popup-success" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
-    <!-- Inline SVG icon (no external libraries) -->
-    <svg id="popupIcon" class="popup-icon" viewBox="0 0 64 64" aria-hidden="true">
-      <!-- envelope icon -->
+  <div id="popupCard" class="popup-card popup-success" role="dialog" aria-modal="true">
+
+    <!-- Envelope Icon (inline SVG, no external libs) -->
+    <svg class="popup-icon" viewBox="0 0 64 64" aria-hidden="true">
       <defs>
-        <linearGradient id="gBlue" x1="0" x2="1">
-          <stop offset="0" stop-color="#0b74ff"></stop>
-          <stop offset="1" stop-color="#2563eb"></stop>
+        <linearGradient id="mailBlue" x1="0" x2="1">
+          <stop offset="0" stop-color="#0b74ff"/>
+          <stop offset="1" stop-color="#2563eb"/>
         </linearGradient>
       </defs>
-      <rect x="10" y="16" width="44" height="32" rx="6" fill="url(#gBlue)"></rect>
-      <path d="M14 20 L32 34 L50 20" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
-      <path d="M14 44 L26 32" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round"></path>
-      <path d="M50 44 L38 32" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round"></path>
+      <rect x="10" y="16" width="44" height="32" rx="6" fill="url(#mailBlue)"/>
+      <path d="M14 20 L32 34 L50 20" fill="none" stroke="#fff" stroke-width="4"/>
+      <path d="M14 44 L26 32" fill="none" stroke="#fff" stroke-width="4"/>
+      <path d="M50 44 L38 32" fill="none" stroke="#fff" stroke-width="4"/>
     </svg>
 
     <h2 id="popupTitle" class="popup-title">Submitted Successfully</h2>
-    <p id="popupText" class="popup-text">
-      Your request has been submitted successfully.
-      We will contact you as soon as possible.
-    </p>
+    <p id="popupText" class="popup-text">Your request has been submitted successfully.</p>
 
-    <button type="button" id="popupBtn" class="popup-btn">OK</button>
+    <button type="button" id="popupBtn" class="popup-btn">Home Page</button>
   </div>
 </div>
 
@@ -383,21 +367,19 @@
   function $(id) { return document.getElementById(id); }
   function trimOrEmpty(v) { return (v ?? "").toString().trim(); }
 
-  function openPopup(type, title, message, buttonText) {
+  function openPopup(type, title, message) {
     const overlay = $("popupOverlay");
     const card = $("popupCard");
-    const btn = $("popupBtn");
 
-    card.classList.remove("popup-success", "popup-error", "popup-warning");
+    card.classList.remove("popup-success", "popup-error");
     card.classList.add("popup-" + type);
 
     $("popupTitle").textContent = title || "Notification";
     $("popupText").textContent = message || "";
-    btn.textContent = buttonText || "OK";
 
     overlay.style.display = "flex";
     overlay.setAttribute("aria-hidden", "false");
-    btn.focus();
+    $("popupBtn").focus();
   }
 
   function closePopup() {
@@ -407,12 +389,8 @@
   }
 
   $("popupBtn").addEventListener("click", closePopup);
-
-  // Optional: close on ESC / click outside
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closePopup();
-  });
-  $("popupOverlay").addEventListener("click", (e) => {
+  document.addEventListener("keydown", e => e.key === "Escape" && closePopup());
+  $("popupOverlay").addEventListener("click", e => {
     if (e.target === $("popupOverlay")) closePopup();
   });
 
@@ -422,13 +400,13 @@
       if (v !== null && v !== undefined && v !== "") $(id).value = v;
     });
 
+    // If signature is missing, show rejection popup immediately
     const sig = getParam("s");
     if (!sig) {
       openPopup(
-        "warning",
-        "Invalid QR Code",
-        "This QR code is missing the security signature.\nThe URL may be corrupted or incomplete.\nPlease generate a new QR code.",
-        "OK"
+        "error",
+        "Request Rejected",
+        "Security signature is missing.\nThe QR URL may be corrupted.\nPlease generate a new QR code."
       );
     }
   });
@@ -442,10 +420,9 @@
     const sig = getParam("s");
     if (!sig) {
       openPopup(
-        "warning",
-        "Invalid QR Code",
-        "This QR code is missing the security signature.\nThe URL may be corrupted or incomplete.\nPlease generate a new QR code.",
-        "OK"
+        "error",
+        "Request Rejected",
+        "Security signature is missing.\nThe QR URL may be corrupted.\nPlease generate a new QR code."
       );
       return;
     }
@@ -481,14 +458,14 @@
       try { serverText = await r.text(); } catch {}
 
       if (!r.ok) {
+        // Treat 400/401/403 as security reject
         if (r.status === 400 || r.status === 401 || r.status === 403) {
           openPopup(
             "error",
             "Request Rejected",
             serverText
               ? ("Security verification failed.\n\n" + serverText)
-              : "Security verification failed.\nThe QR data/signature is invalid or the URL is corrupted.\nPlease generate a new QR code.",
-            "OK"
+              : "Security verification failed.\nThe QR data/signature is invalid or the URL is corrupted.\nPlease generate a new QR code."
           );
         } else {
           openPopup(
@@ -496,8 +473,7 @@
             "Request Rejected",
             serverText
               ? ("The server rejected the request.\n\n" + serverText)
-              : ("The server rejected the request (HTTP " + r.status + ")."),
-            "OK"
+              : ("The server rejected the request (HTTP " + r.status + ").")
           );
         }
         return;
@@ -506,10 +482,10 @@
       openPopup(
         "success",
         "Submitted Successfully",
-        "Your request has been submitted successfully.\nWe will contact you as soon as possible.",
-        "OK"
+        "Your request has been submitted successfully.\nWe will contact you as soon as possible."
       );
 
+      // Reset only user inputs; keep machine data visible
       $("name").value = "";
       $("company").value = "";
 
@@ -517,8 +493,7 @@
       openPopup(
         "error",
         "Communication Error",
-        "A network error occurred while sending the request.\nPlease check your connection and try again.",
-        "OK"
+        "A network error occurred while sending the request.\nPlease check your connection and try again."
       );
     } finally {
       submitBtn.disabled = false;
