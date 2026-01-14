@@ -7,8 +7,8 @@
 
   <style>
     :root{
-      --primary:#3948B1;
-      --banner:#004b93;
+      --primary:#3948B1;     /* button color */
+      --headerBlue:#004b93;  /* popup header + page banner */
       --bg:#f5f7fb;
       --card:#ffffff;
       --muted:#6b7280;
@@ -40,7 +40,7 @@
       display:flex;
       align-items:center;
       gap:0.8rem;
-      min-width: 220px;
+      min-width:220px;
     }
 
     .logo-area img{ height:36px; }
@@ -75,7 +75,7 @@
     }
 
     .title-banner{
-      background:var(--banner);
+      background:var(--headerBlue);
       color:white;
       font-size:1.6rem;
       font-weight:800;
@@ -144,14 +144,12 @@
 
     .row{
       display:grid;
-      grid-template-columns: 1fr;
+      grid-template-columns:1fr;
       gap:0.9rem;
     }
 
-    @media (min-width: 720px){
-      .row.two{
-        grid-template-columns: 1fr 1fr;
-      }
+    @media (min-width:720px){
+      .row.two{ grid-template-columns:1fr 1fr; }
     }
 
     button{
@@ -169,16 +167,6 @@
     button[disabled]{
       opacity:0.7;
       cursor:not-allowed;
-    }
-
-    /* Fallback status box (kept) */
-    #statusBox{
-      display:none;
-      max-width:980px;
-      margin: 14px auto 0 auto;
-      padding: 14px 18px;
-      border-radius: 10px;
-      font-size: 1rem;
     }
 
     footer{
@@ -211,74 +199,80 @@
       overflow:hidden;
     }
 
+    /* Header is ALWAYS blue to match design */
     .modal-header{
-      padding:1rem 1.1rem;
+      background:var(--headerBlue);
+      color:#fff;
+      padding:0.95rem 1.1rem;
       font-weight:900;
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:0.75rem;
-      border-bottom:1px solid var(--border);
     }
 
     .modal-title{
       margin:0;
       font-size:1.1rem;
+      font-weight:900;
     }
 
+    /* Close icon in header */
     .modal-close{
       appearance:none;
       border:none;
       background:transparent;
-      font-size:1.4rem;
+      color:#fff;
+      font-size:1.6rem;
       line-height:1;
       cursor:pointer;
-      padding:0.25rem 0.4rem;
+      padding:0.25rem 0.45rem;
       border-radius:10px;
     }
 
+    .modal-close:hover{
+      background:rgba(255,255,255,0.15);
+    }
+
     .modal-close:focus{
-      outline:2px solid #c7d2fe;
+      outline:2px solid rgba(255,255,255,0.75);
       outline-offset:2px;
     }
 
+    /* Body text + status accent line */
     .modal-body{
       padding:1rem 1.1rem;
       color:#111827;
+      border-top:4px solid transparent; /* set by status type */
     }
 
     .modal-body p{
-      margin:0.2rem 0 0.8rem 0;
+      margin:0;
       line-height:1.45;
+      white-space:pre-line;
     }
 
     .modal-actions{
-      padding:0 1.1rem 1.1rem 1.1rem;
+      padding:1rem 1.1rem 1.1rem 1.1rem;
+      border-top:1px solid var(--border);
     }
 
-    .btn-secondary{
+    /* OK button stays primary */
+    .modal-ok{
       width:100%;
       border-radius:999px;
-      padding:0.8rem 1rem;
-      font-weight:800;
-      border:1px solid var(--border);
-      background:#fff;
+      padding:0.85rem 1rem;
+      font-weight:900;
+      border:none;
+      background:var(--primary);
+      color:#fff;
       cursor:pointer;
     }
 
-    /* Modal type styling */
-    .type-success .modal-header{
-      background:#e8f5e9;
-      color:#1b5e20;
-    }
-    .type-error .modal-header{
-      background:#fdecea;
-      color:#b71c1c;
-    }
-    .type-warning .modal-header{
-      background:#fff7ed;
-      color:#7c2d12;
-    }
+    /* Status types (header stays blue; only accent line changes) */
+    .type-success .modal-body{ border-top-color:#2e7d32; }
+    .type-error   .modal-body{ border-top-color:#c62828; }
+    .type-warning .modal-body{ border-top-color:#f59e0b; }
   </style>
 </head>
 
@@ -363,20 +357,19 @@
 
 </div>
 
-<div id="statusBox"></div>
-
 <!-- Notification Popup -->
 <div id="modalOverlay" class="modal-overlay" aria-hidden="true">
   <div id="modalBox" class="modal type-success" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-header">
       <h3 id="modalTitle" class="modal-title">Notification</h3>
+      <!-- Close icon is here (in header) -->
       <button type="button" class="modal-close" id="modalCloseBtn" aria-label="Close">×</button>
     </div>
     <div class="modal-body">
       <p id="modalMsg">...</p>
     </div>
     <div class="modal-actions">
-      <button type="button" class="btn-secondary" id="modalOkBtn">OK</button>
+      <button type="button" class="modal-ok" id="modalOkBtn">OK</button>
     </div>
   </div>
 </div>
@@ -391,17 +384,6 @@
   }
   function $(id) { return document.getElementById(id); }
   function trimOrEmpty(v) { return (v ?? "").toString().trim(); }
-
-  // Fallback inline status (kept)
-  function showStatus(msg, ok) {
-    const b = $("statusBox");
-    b.style.display = "block";
-    b.textContent = msg;
-    b.style.background = ok ? "#e8f5e9" : "#fdecea";
-    b.style.border = ok ? "1px solid #2e7d32" : "1px solid #c62828";
-    b.style.color = ok ? "#1b5e20" : "#b71c1c";
-    b.scrollIntoView({ behavior: "smooth" });
-  }
 
   // ===== Popup / Modal Notification =====
   function openModal(type, title, message) {
@@ -418,7 +400,7 @@
     overlay.style.display = "flex";
     overlay.setAttribute("aria-hidden", "false");
 
-    // focus for accessibility + HMI keyboard behavior
+    // Focus for keyboard/HMI
     $("modalOkBtn").focus();
   }
 
@@ -431,12 +413,12 @@
   $("modalCloseBtn").addEventListener("click", closeModal);
   $("modalOkBtn").addEventListener("click", closeModal);
 
-  // Close modal when clicking outside the box
+  // Close when clicking outside
   $("modalOverlay").addEventListener("click", (e) => {
     if (e.target === $("modalOverlay")) closeModal();
   });
 
-  // Close modal on ESC
+  // Close on ESC
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeModal();
   });
@@ -454,10 +436,8 @@
       openModal(
         "warning",
         "Invalid QR Code",
-        "This QR code is missing a security signature. The URL may be corrupted or incomplete. Please generate a new QR code."
+        "This QR code is missing a security signature.\nThe URL may be corrupted or incomplete.\nPlease generate a new QR code."
       );
-      // (Optional fallback)
-      showStatus("Invalid QR code: missing signature parameter (s).", false);
     }
   });
 
@@ -472,7 +452,7 @@
       openModal(
         "warning",
         "Invalid QR Code",
-        "This QR code is missing a security signature. The URL may be corrupted or incomplete. Please generate a new QR code."
+        "This QR code is missing a security signature.\nThe URL may be corrupted or incomplete.\nPlease generate a new QR code."
       );
       return;
     }
@@ -504,26 +484,24 @@
         body: JSON.stringify(data)
       });
 
-      // read response text (may contain backend error detail)
       let serverText = "";
       try { serverText = await r.text(); } catch {}
 
       if (!r.ok) {
-        // Security / corruption messages are typically 400/401/403
         if (r.status === 400 || r.status === 401 || r.status === 403) {
           openModal(
             "error",
             "Security Verification Failed",
             serverText
-              ? ("The server rejected this request due to invalid or corrupted QR data: " + serverText)
-              : "The server rejected this request because the QR data or signature is invalid. Please generate a new QR code."
+              ? ("The server rejected this request due to invalid or corrupted QR data:\n" + serverText)
+              : "The server rejected this request because the QR data or signature is invalid.\nPlease generate a new QR code."
           );
         } else {
           openModal(
             "error",
             "Request Rejected",
             serverText
-              ? ("The server rejected this request: " + serverText)
+              ? ("The server rejected this request:\n" + serverText)
               : ("The server rejected this request (HTTP " + r.status + ").")
           );
         }
@@ -533,10 +511,10 @@
       openModal(
         "success",
         "Submitted Successfully",
-        "Your request has been submitted successfully. We will contact you as soon as possible."
+        "Your request has been submitted successfully.\nWe will contact you as soon as possible."
       );
 
-      // Keep machine data visible; optional reset for contact inputs
+      // Optional reset for user inputs; keep machine data visible
       $("name").value = "";
       $("company").value = "";
 
@@ -544,7 +522,7 @@
       openModal(
         "error",
         "Communication Error",
-        "A network error occurred while sending the request. Please check your connection and try again."
+        "A network error occurred while sending the request.\nPlease check your connection and try again."
       );
     } finally {
       submitBtn.disabled = false;
