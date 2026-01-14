@@ -8,11 +8,16 @@
   <style>
     :root{
       --primary:#3948B1;     /* main button color */
-      --headerBlue:#004b93;  /* banner + popup header */
+      --brandBlue:#004b93;   /* banner + brand */
       --bg:#f5f7fb;
       --card:#ffffff;
       --muted:#6b7280;
       --border:#e5e7eb;
+
+      --ok:#2563eb;          /* optimized “action blue” */
+      --success:#16a34a;
+      --error:#dc2626;
+      --warning:#f59e0b;
     }
 
     body{
@@ -75,7 +80,7 @@
     }
 
     .title-banner{
-      background:var(--headerBlue);
+      background:var(--brandBlue);
       color:white;
       font-size:1.6rem;
       font-weight:800;
@@ -178,11 +183,11 @@
       color:#374151;
     }
 
-    /* ===== Clean Notification Popup (no icons, only OK) ===== */
-    .notice-overlay{
+    /* ===== Fullscreen “Success Page”-style Popup (like your example) ===== */
+    .popup-overlay{
       position:fixed;
       inset:0;
-      background:rgba(0,0,0,0.45);
+      background:rgba(0,0,0,0.35);
       display:none;
       align-items:center;
       justify-content:center;
@@ -190,79 +195,71 @@
       z-index:9999;
     }
 
-    .notice-card{
-      width:min(560px, 100%);
+    .popup-card{
+      width:min(720px, 100%);
       background:#fff;
-      border-radius:16px;
-      border:1px solid var(--border);
-      box-shadow:0 18px 40px rgba(0,0,0,0.22);
-      overflow:hidden;
+      border-radius:18px;
+      box-shadow:0 22px 55px rgba(0,0,0,0.25);
+      border:1px solid rgba(229,231,235,0.9);
+      padding:2.1rem 1.4rem 1.6rem 1.4rem;
+      text-align:center;
     }
 
-    .notice-header{
-      background:var(--headerBlue);
-      color:#fff;
-      padding:1rem 1.2rem;
-      display:flex;
-      align-items:center;
-      gap:0.8rem;
+    .popup-icon{
+      width:92px;
+      height:92px;
+      margin:0 auto 1.1rem auto;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,0.14));
     }
 
-    .notice-brand{
-      width:10px;
-      height:28px;
-      border-radius:999px;
-      background:#fff;
-      opacity:0.9;
-    }
-
-    .notice-title{
-      margin:0;
-      font-size:1.25rem;
+    .popup-title{
+      margin:0 0 0.75rem 0;
+      font-size:2rem;
       font-weight:900;
       letter-spacing:0.2px;
-    }
-
-    .notice-body{
-      padding:1.1rem 1.2rem 0.95rem 1.2rem;
-      border-top:5px solid transparent; /* status accent */
-    }
-
-    .notice-msg{
-      margin:0;
-      font-size:1.02rem;
-      line-height:1.6;
       color:#111827;
+    }
+
+    .popup-text{
+      margin:0 auto 1.6rem auto;
+      max-width:60ch;
+      line-height:1.7;
+      font-size:1.05rem;
+      color:#374151;
       white-space:pre-line;
     }
 
-    .notice-actions{
-      padding:1rem 1.2rem 1.2rem 1.2rem;
-      border-top:1px solid var(--border);
-    }
-
-    .notice-ok{
-      width:100%;
+    .popup-btn{
+      display:inline-block;
+      min-width: 220px;
+      background:var(--ok);
+      color:#fff;
       border:none;
-      border-radius:999px;
-      padding:0.95rem 1rem;
-      font-size:1.08rem;
+      border-radius:10px;
+      padding:0.95rem 1.2rem;
+      font-size:1.15rem;
       font-weight:900;
       cursor:pointer;
-      background:var(--primary);
-      color:#fff;
+      box-shadow:0 10px 22px rgba(37,99,235,0.25);
     }
 
-    .notice-ok:hover{ filter:brightness(0.95); }
-    .notice-ok:focus{
-      outline:2px solid rgba(57,72,177,0.35);
+    .popup-btn:hover{ filter:brightness(0.96); }
+    .popup-btn:focus{
+      outline:3px solid rgba(37,99,235,0.25);
       outline-offset:3px;
     }
 
-    /* Status types: only accent line changes */
-    .notice-success .notice-body{ border-top-color:#2e7d32; }
-    .notice-error   .notice-body{ border-top-color:#c62828; }
-    .notice-warning .notice-body{ border-top-color:#f59e0b; }
+    /* Status theme (subtle, no extra icons/buttons) */
+    .popup-success .popup-title{ color:#111827; }
+    .popup-error   .popup-btn{ background:var(--error); box-shadow:0 10px 22px rgba(220,38,38,0.20); }
+    .popup-warning .popup-btn{ background:var(--warning); box-shadow:0 10px 22px rgba(245,158,11,0.22); }
+
+    @media (max-width: 420px){
+      .popup-title{ font-size:1.6rem; }
+      .popup-icon{ width:80px; height:80px; }
+      .popup-card{ padding:1.7rem 1.1rem 1.3rem 1.1rem; }
+      .popup-btn{ width:100%; min-width:auto; }
+    }
   </style>
 </head>
 
@@ -347,21 +344,31 @@
 
 </div>
 
-<!-- Clean Notification Popup -->
-<div id="noticeOverlay" class="notice-overlay" aria-hidden="true">
-  <div id="noticeCard" class="notice-card notice-success" role="dialog" aria-modal="true" aria-labelledby="noticeTitle">
-    <div class="notice-header">
-      <div class="notice-brand" aria-hidden="true"></div>
-      <h3 id="noticeTitle" class="notice-title">Submitted</h3>
-    </div>
+<!-- Popup (design like your example: big icon, big title, centered text, one button) -->
+<div id="popupOverlay" class="popup-overlay" aria-hidden="true">
+  <div id="popupCard" class="popup-card popup-success" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
+    <!-- Inline SVG icon (no external libraries) -->
+    <svg id="popupIcon" class="popup-icon" viewBox="0 0 64 64" aria-hidden="true">
+      <!-- envelope icon -->
+      <defs>
+        <linearGradient id="gBlue" x1="0" x2="1">
+          <stop offset="0" stop-color="#0b74ff"></stop>
+          <stop offset="1" stop-color="#2563eb"></stop>
+        </linearGradient>
+      </defs>
+      <rect x="10" y="16" width="44" height="32" rx="6" fill="url(#gBlue)"></rect>
+      <path d="M14 20 L32 34 L50 20" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+      <path d="M14 44 L26 32" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round"></path>
+      <path d="M50 44 L38 32" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round"></path>
+    </svg>
 
-    <div class="notice-body">
-      <p id="noticeMsg" class="notice-msg">Your request has been submitted successfully.</p>
-    </div>
+    <h2 id="popupTitle" class="popup-title">Submitted Successfully</h2>
+    <p id="popupText" class="popup-text">
+      Your request has been submitted successfully.
+      We will contact you as soon as possible.
+    </p>
 
-    <div class="notice-actions">
-      <button type="button" id="noticeOkBtn" class="notice-ok">OK</button>
-    </div>
+    <button type="button" id="popupBtn" class="popup-btn">OK</button>
   </div>
 </div>
 
@@ -376,51 +383,52 @@
   function $(id) { return document.getElementById(id); }
   function trimOrEmpty(v) { return (v ?? "").toString().trim(); }
 
-  function openNotice(type, title, message) {
-    const overlay = $("noticeOverlay");
-    const card = $("noticeCard");
+  function openPopup(type, title, message, buttonText) {
+    const overlay = $("popupOverlay");
+    const card = $("popupCard");
+    const btn = $("popupBtn");
 
-    card.classList.remove("notice-success", "notice-error", "notice-warning");
-    card.classList.add("notice-" + type);
+    card.classList.remove("popup-success", "popup-error", "popup-warning");
+    card.classList.add("popup-" + type);
 
-    $("noticeTitle").textContent = title || "Notification";
-    $("noticeMsg").textContent = message || "";
+    $("popupTitle").textContent = title || "Notification";
+    $("popupText").textContent = message || "";
+    btn.textContent = buttonText || "OK";
 
     overlay.style.display = "flex";
     overlay.setAttribute("aria-hidden", "false");
-    $("noticeOkBtn").focus();
+    btn.focus();
   }
 
-  function closeNotice() {
-    const overlay = $("noticeOverlay");
+  function closePopup() {
+    const overlay = $("popupOverlay");
     overlay.style.display = "none";
     overlay.setAttribute("aria-hidden", "true");
   }
 
-  $("noticeOkBtn").addEventListener("click", closeNotice);
+  $("popupBtn").addEventListener("click", closePopup);
 
-  // Optional: close by clicking outside or ESC
-  $("noticeOverlay").addEventListener("click", (e) => {
-    if (e.target === $("noticeOverlay")) closeNotice();
-  });
+  // Optional: close on ESC / click outside
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeNotice();
+    if (e.key === "Escape") closePopup();
+  });
+  $("popupOverlay").addEventListener("click", (e) => {
+    if (e.target === $("popupOverlay")) closePopup();
   });
 
   document.addEventListener("DOMContentLoaded", () => {
-    // Fill machine parameters from URL (QR code)
     ["MachineName", "MachineID", "ErrorCode", "ErrorText", "ProLine"].forEach(id => {
       const v = getParam(id);
       if (v !== null && v !== undefined && v !== "") $(id).value = v;
     });
 
-    // Early warning if signature missing
     const sig = getParam("s");
     if (!sig) {
-      openNotice(
+      openPopup(
         "warning",
         "Invalid QR Code",
-        "This QR code is missing the security signature.\nThe URL may be corrupted or incomplete.\nPlease generate a new QR code."
+        "This QR code is missing the security signature.\nThe URL may be corrupted or incomplete.\nPlease generate a new QR code.",
+        "OK"
       );
     }
   });
@@ -433,10 +441,11 @@
 
     const sig = getParam("s");
     if (!sig) {
-      openNotice(
+      openPopup(
         "warning",
         "Invalid QR Code",
-        "This QR code is missing the security signature.\nThe URL may be corrupted or incomplete.\nPlease generate a new QR code."
+        "This QR code is missing the security signature.\nThe URL may be corrupted or incomplete.\nPlease generate a new QR code.",
+        "OK"
       );
       return;
     }
@@ -473,40 +482,43 @@
 
       if (!r.ok) {
         if (r.status === 400 || r.status === 401 || r.status === 403) {
-          openNotice(
-            "error",
-            "Security Verification Failed",
-            serverText
-              ? ("The server rejected this request due to invalid or corrupted QR data:\n" + serverText)
-              : "The server rejected this request because the QR data or signature is invalid.\nThe URL may be corrupted.\nPlease generate a new QR code."
-          );
-        } else {
-          openNotice(
+          openPopup(
             "error",
             "Request Rejected",
             serverText
-              ? ("The server rejected this request:\n" + serverText)
-              : ("The server rejected this request (HTTP " + r.status + ").")
+              ? ("Security verification failed.\n\n" + serverText)
+              : "Security verification failed.\nThe QR data/signature is invalid or the URL is corrupted.\nPlease generate a new QR code.",
+            "OK"
+          );
+        } else {
+          openPopup(
+            "error",
+            "Request Rejected",
+            serverText
+              ? ("The server rejected the request.\n\n" + serverText)
+              : ("The server rejected the request (HTTP " + r.status + ")."),
+            "OK"
           );
         }
         return;
       }
 
-      openNotice(
+      openPopup(
         "success",
         "Submitted Successfully",
-        "Your request has been submitted successfully.\nWe will contact you as soon as possible."
+        "Your request has been submitted successfully.\nWe will contact you as soon as possible.",
+        "OK"
       );
 
-      // Reset user inputs only (machine data stays visible)
       $("name").value = "";
       $("company").value = "";
 
     } catch (err) {
-      openNotice(
+      openPopup(
         "error",
         "Communication Error",
-        "A network error occurred while sending the request.\nPlease check your connection and try again."
+        "A network error occurred while sending the request.\nPlease check your connection and try again.",
+        "OK"
       );
     } finally {
       submitBtn.disabled = false;
