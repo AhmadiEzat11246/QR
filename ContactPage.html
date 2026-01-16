@@ -19,7 +19,6 @@
       --errorRed:#b91c1c;
     }
 
-    /* ===== Base ===== */
     body{
       margin:0;
       font-family:"Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -117,19 +116,16 @@
       margin-bottom:0.3rem;
     }
 
-    /* Inputs */
     input{
       width:100%;
-      box-sizing:border-box; /* prevents overflow/overlap */
+      box-sizing:border-box;
       padding:0.75rem;
       border-radius:8px;
       border:1px solid #d1d5db;
       font-size:0.95rem;
     }
 
-    input[readonly]{
-      background:#f1f3f6;
-    }
+    input[readonly]{ background:#f1f3f6; }
 
     /* ===== FIX FOR NAME / COMPANY OVERLAP ===== */
     .row{
@@ -270,6 +266,7 @@
           <input id="company" autocomplete="organization">
         </div>
       </div>
+
       <div class="hint">Machine data is filled automatically from the QR code.</div>
       <button type="submit" class="submit-btn" id="submitBtn">Send</button>
     </form>
@@ -309,6 +306,10 @@
   const $ = (id) => document.getElementById(id);
   const getParam = (n) => new URLSearchParams(location.search).get(n);
 
+  const TAMPER_MSG =
+    "The URL appears to have been tampered.\n" +
+    "Please scan the QR code again.";
+
   ["MachineName","MachineID","ErrorCode","ErrorText","ProLine"]
     .forEach(id => { const v = getParam(id); if (v) $(id).value = v; });
 
@@ -339,11 +340,7 @@
 
     const sig = getParam("s");
     if (!sig) {
-      openPopup(
-        "error",
-        "Request Rejected",
-        "Security signature missing.\nPlease generate a new QR code."
-      );
+      openPopup("error", "Request Rejected", TAMPER_MSG);
       return;
     }
 
@@ -375,17 +372,9 @@
         body: JSON.stringify(payload)
       });
 
-      let serverText = "";
-      try { serverText = await r.text(); } catch {}
-
+      // If backend rejects (especially 400/401/403), treat as tamper
       if (!r.ok) {
-        openPopup(
-          "error",
-          "Request Rejected",
-          serverText
-            ? ("Verification failed.\n\n" + serverText)
-            : "Verification failed.\nThe QR code may be invalid or corrupted."
-        );
+        openPopup("error", "Request Rejected", TAMPER_MSG);
         return;
       }
 
