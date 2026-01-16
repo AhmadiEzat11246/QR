@@ -28,12 +28,48 @@
     }
 
     header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
       padding:1rem 1.25rem;
       background:#fff;
       box-shadow:0 2px 4px rgba(0,0,0,0.08);
       position:sticky;
       top:0;
       z-index:10;
+      flex-wrap:wrap;
+      gap:0.75rem;
+    }
+
+    .logo-area{
+      display:flex;
+      align-items:center;
+      gap:0.8rem;
+    }
+
+    .logo-area img{ height:36px; }
+
+    .logo-area h3{
+      margin:0;
+      font-size:1rem;
+      color:var(--primary);
+      font-weight:700;
+      letter-spacing:0.2px;
+    }
+
+    nav ul{
+      display:flex;
+      flex-wrap:wrap;
+      gap:1rem;
+      list-style:none;
+      margin:0;
+      padding:0;
+    }
+
+    nav ul li a{
+      text-decoration:none;
+      color:#111827;
+      font-weight:500;
     }
 
     .hero{
@@ -84,7 +120,7 @@
     /* Inputs */
     input{
       width:100%;
-      box-sizing:border-box;              /* IMPORTANT: prevents overflow/overlap */
+      box-sizing:border-box; /* prevents overflow/overlap */
       padding:0.75rem;
       border-radius:8px;
       border:1px solid #d1d5db;
@@ -125,7 +161,21 @@
       cursor:pointer;
     }
 
-    /* ===== POPUP (isolated, no overlap) ===== */
+    button.submit-btn[disabled]{
+      opacity:0.75;
+      cursor:not-allowed;
+    }
+
+    footer{
+      text-align:center;
+      padding:1.2rem;
+      font-size:0.9rem;
+      background:#f5f5f5;
+      margin-top:2rem;
+      color:#374151;
+    }
+
+    /* ===== POPUP ===== */
     .popup-overlay{
       position:fixed;
       inset:0;
@@ -171,7 +221,6 @@
       white-space:pre-line;
     }
 
-    /* SMALL Home Page button (text-width only) */
     .popup-btn{
       background:var(--popupBlue);
       color:#fff;
@@ -188,7 +237,19 @@
 
 <body>
 
-<header></header>
+<header>
+  <div class="logo-area">
+    <img src="bms-logo.png" alt="BMS Logo">
+    <h3>END OF LINE PACKAGING EXPERTS</h3>
+  </div>
+  <nav>
+    <ul>
+      <li><a href="#">Produkte</a></li>
+      <li><a href="#">Service</a></li>
+      <li><a href="#">Kontakt</a></li>
+    </ul>
+  </nav>
+</header>
 
 <section class="hero">
   <div class="title-banner">Report Machine Malfunction</div>
@@ -240,6 +301,10 @@
   </div>
 </div>
 
+<footer>
+  © 2025 BMS Maschinenfabrik – Thesis Project
+</footer>
+
 <script>
   const $ = (id) => document.getElementById(id);
   const getParam = (n) => new URLSearchParams(location.search).get(n);
@@ -253,6 +318,7 @@
     $("popupText").textContent = msg;
     $("popupOverlay").style.display = "flex";
     $("popupOverlay").setAttribute("aria-hidden","false");
+    $("popupBtn").focus();
   }
 
   function closePopup(){
@@ -329,7 +395,6 @@
         "Your request has been submitted successfully.\nWe will contact you as soon as possible."
       );
 
-      // Reset only contact fields
       $("name").value = "";
       $("company").value = "";
 
