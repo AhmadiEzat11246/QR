@@ -15,7 +15,7 @@
 
       /* Popup */
       --popupBlue:#2563eb;
-      --successGreen:#2f855a; /* elegant */
+      --successGreen:#2f855a;
       --errorRed:#b91c1c;
     }
 
@@ -127,7 +127,6 @@
 
     input[readonly]{ background:#f1f3f6; }
 
-    /* ===== FIX FOR NAME / COMPANY OVERLAP ===== */
     .row{
       display:grid;
       gap:1rem;
@@ -137,7 +136,6 @@
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       align-items:start;
     }
-    /* ===== END FIX ===== */
 
     .hint{
       font-size:0.85rem;
@@ -228,6 +226,9 @@
       cursor:pointer;
       display:inline-block;
     }
+
+    /* optional: hide hidden inputs without affecting layout */
+    .hidden { display:none !important; }
   </style>
 </head>
 
@@ -268,6 +269,16 @@
       </div>
 
       <div class="hint">Machine data is filled automatically from the QR code.</div>
+
+      <!-- Store V2 security params (optional, but useful for debugging / fallback submission) -->
+      <input id="iat" class="hidden" readonly>
+      <input id="exp" class="hidden" readonly>
+      <input id="nonce" class="hidden" readonly>
+      <input id="scope" class="hidden" readonly>
+      <input id="deviceId" class="hidden" readonly>
+      <input id="kid" class="hidden" readonly>
+      <input id="sig" class="hidden" readonly>
+
       <button type="submit" class="submit-btn" id="submitBtn">Send</button>
     </form>
   </div>
@@ -279,7 +290,7 @@
       <div><label for="MachineID">Machine ID</label><input id="MachineID" readonly></div>
       <div><label for="ErrorCode">Error Code</label><input id="ErrorCode" readonly></div>
       <div><label for="ErrorText">Error Text</label><input id="ErrorText" readonly></div>
-      <div><label for="ProLine">Production Line</label><input id="ProLine" readonly></div>
+      <!-- Production Line removed (not part of V2 canonical set) -->
     </div>
   </div>
 
@@ -303,15 +314,14 @@
 </footer>
 
 <script>
+  const BACKEND_URL = "https://bms-backend-d1v5.onrender.com/log";
+
   const $ = (id) => document.getElementById(id);
   const getParam = (n) => new URLSearchParams(location.search).get(n);
 
   const TAMPER_MSG =
     "The URL appears to have been tampered.\n" +
     "Please scan the QR code again.";
-
-  ["MachineName","MachineID","ErrorCode","ErrorText","ProLine"]
-    .forEach(id => { const v = getParam(id); if (v) $(id).value = v; });
 
   function openPopup(type, title, msg){
     $("popupCard").className = "popup-card popup-" + type;
@@ -335,26 +345,99 @@
     if (e.key === "Escape") closePopup();
   });
 
+  function nowUnix() {
+    return Math.floor(Date.now() / 1000);
+  }
+
+  function isHex(str){
+    return typeof str === "string" && /^[0-9a-fA-F]+$/.test(str) && str.length > 0;
+  }
+
+  // Strictly the parameters your backend expects (V2)
+  const V2_FIELDS = [
+    "MachineName","MachineID","ErrorCode","ErrorText",
+    "iat","exp","nonce","scope","deviceId","kid","sig"
+  ];
+
+  function readV2FromUrl(){
+    const o = {};
+    for (const k of V2_FIELDS) o[k] = getParam(k) || "";
+    return o;
+  }
+
+  function prefillUI(v2){
+    // machine fields
+    ["MachineName","MachineID","ErrorCode","ErrorText"].forEach(id => {
+      if (v2[id]) $(id).value = v2[id];
+    });
+
+    // hidden fields (debug/fallback)
+    ["iat","exp","nonce","scope","deviceId","kid","sig"].forEach(id => {
+      if ($(id)) $(id).value = v2[id] || "";
+    });
+  }
+
+  function clientSideGate(v2){
+    // If any required field is missing -> tamper
+    const required = ["MachineName","MachineID","ErrorCode","ErrorText","iat","exp","nonce","scope","deviceId","kid","sig"];
+    for (const k of required){
+      if (!v2[k] || String(v2[k]).trim().length === 0) return false;
+    }
+
+    // Signature format (backend expects hex)
+    if (!isHex(v2.sig)) return false;
+
+    // Expiry check (backend enforces now > exp)
+    const exp = Number(v2.exp);
+    if (!Number.isFinite(exp)) return false;
+    if (nowUnix() > exp) return false;
+
+    // Scope check (backend enforces scope === "submit")
+    if (String(v2.scope) !== "submit") return false;
+
+    return true;
+  }
+
+  const v2 = readV2FromUrl();
+  prefillUI(v2);
+
+  // Optional: show tamper immediately if the QR link is invalid/expired
+  // If you prefer only on submit, comment this block out.
+  if (!clientSideGate(v2)) {
+    openPopup("error", "Request Rejected", TAMPER_MSG);
+  }
+
   $("contactForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const sig = getParam("s");
-    if (!sig) {
+    // Re-check at submit time (important because exp can become invalid while page is open)
+    const currentV2 = readV2FromUrl();
+    if (!clientSideGate(currentV2)) {
       openPopup("error", "Request Rejected", TAMPER_MSG);
       return;
     }
 
+    // Build payload that matches backend expectation: req.body.machine holds the required fields.
     const payload = {
       contact: {
         Name: ($("name").value || "").trim(),
         Company: ($("company").value || "").trim()
       },
       machine: {
-        MachineName: ($("MachineName").value || "").trim(),
-        MachineID: ($("MachineID").value || "").trim(),
-        ErrorCode: ($("ErrorCode").value || "").trim(),
-        ErrorText: ($("ErrorText").value || "").trim(),
-        ProLine: ($("ProLine").value || "").trim()
+        MachineName: String(currentV2.MachineName),
+        MachineID:   String(currentV2.MachineID),
+        ErrorCode:   String(currentV2.ErrorCode),
+        ErrorText:   String(currentV2.ErrorText),
+        iat:         String(currentV2.iat),
+        exp:         String(currentV2.exp),
+        nonce:       String(currentV2.nonce),
+        scope:       String(currentV2.scope),
+        deviceId:    String(currentV2.deviceId),
+        kid:         String(currentV2.kid),
+
+        // Optional: backend already reads signature from header/body.
+        // Keeping it here is convenient for debugging.
+        sig:         String(currentV2.sig).toLowerCase()
       }
     };
 
@@ -363,17 +446,17 @@
     btn.textContent = "Sending...";
 
     try{
-      const r = await fetch("https://bms-backend-d1v5.onrender.com/log",{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
-          "X-BMS-Signature": sig
+      const r = await fetch(BACKEND_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-BMS-Signature": String(currentV2.sig).toLowerCase()
         },
         body: JSON.stringify(payload)
       });
 
-      // If backend rejects (especially 400/401/403), treat as tamper
       if (!r.ok) {
+        // 400/401/403 from backend -> tamper / expired / wrong scope / missing fields
         openPopup("error", "Request Rejected", TAMPER_MSG);
         return;
       }
