@@ -12,6 +12,8 @@
       --bg:#f5f7fb;
       --card:#ffffff;
       --border:#e5e7eb;
+
+      /* Popup */
       --popupBlue:#2563eb;
       --successGreen:#2f855a;
       --errorRed:#b91c1c;
@@ -51,10 +53,12 @@
       font-size:1rem;
       color:var(--primary);
       font-weight:700;
+      letter-spacing:0.2px;
     }
 
     nav ul{
       display:flex;
+      flex-wrap:wrap;
       gap:1rem;
       list-style:none;
       margin:0;
@@ -114,6 +118,7 @@
 
     input{
       width:100%;
+      box-sizing:border-box;
       padding:0.75rem;
       border-radius:8px;
       border:1px solid #d1d5db;
@@ -129,6 +134,7 @@
 
     .row.two{
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      align-items:start;
     }
 
     .hint{
@@ -144,8 +150,14 @@
       border:none;
       padding:0.7rem 1.1rem;
       border-radius:999px;
+      font-size:0.95rem;
       font-weight:600;
       cursor:pointer;
+    }
+
+    button.submit-btn[disabled]{
+      opacity:0.75;
+      cursor:not-allowed;
     }
 
     footer{
@@ -165,19 +177,35 @@
       align-items:center;
       justify-content:center;
       z-index:9999;
+      padding:1rem;
     }
 
     .popup-card{
       background:#fff;
       border-radius:16px;
-      padding:1.6rem;
-      width:min(560px, 90%);
+      padding:1.8rem 1.6rem 1.5rem;
       text-align:center;
+      width:min(560px, 90%);
+      box-shadow:0 24px 55px rgba(0,0,0,0.22);
+      border:1px solid rgba(229,231,235,0.9);
     }
 
-    .popup-title{ font-size:1.3rem; font-weight:600; }
+    .popup-title{
+      margin:0 0 0.4rem;
+      font-size:1.35rem;
+      font-weight:600;
+    }
+
     .popup-success .popup-title{ color:var(--successGreen); }
-    .popup-error .popup-title{ color:var(--errorRed); }
+    .popup-error   .popup-title{ color:var(--errorRed); }
+
+    .popup-text{
+      font-size:0.95rem;
+      line-height:1.6;
+      color:#374151;
+      margin-bottom:1.2rem;
+      white-space:pre-line;
+    }
 
     .popup-btn{
       background:var(--popupBlue);
@@ -185,10 +213,12 @@
       border:none;
       border-radius:6px;
       padding:0.45rem 0.9rem;
+      font-size:0.85rem;
+      font-weight:600;
       cursor:pointer;
     }
 
-    .hidden{ display:none; }
+    .hidden{ display:none !important; }
   </style>
 </head>
 
@@ -199,6 +229,13 @@
     <img src="bms-logo.png" alt="BMS Logo">
     <h3>END OF LINE PACKAGING EXPERTS</h3>
   </div>
+  <nav>
+    <ul>
+      <li><a href="#">Produkte</a></li>
+      <li><a href="#">Service</a></li>
+      <li><a href="#">Kontakt</a></li>
+    </ul>
+  </nav>
 </header>
 
 <section class="hero">
@@ -209,28 +246,28 @@
 
   <div class="card">
     <h2>Contact</h2>
-    <form id="contactForm">
+    <form id="contactForm" novalidate>
       <div class="row two">
         <div>
-          <label>Name</label>
+          <label for="name">Name</label>
           <input id="name">
         </div>
         <div>
-          <label>Company</label>
+          <label for="company">Company</label>
           <input id="company">
         </div>
       </div>
 
       <div class="hint">Machine data is filled automatically from the QR code.</div>
 
-      <!-- Security parameters -->
+      <!-- Security params -->
       <input id="iat" class="hidden">
       <input id="exp" class="hidden">
       <input id="nonce" class="hidden">
       <input id="deviceId" class="hidden">
       <input id="sig" class="hidden">
 
-      <button class="submit-btn">Send</button>
+      <button type="submit" class="submit-btn" id="submitBtn">Send</button>
     </form>
   </div>
 
@@ -249,81 +286,132 @@
 <div id="popupOverlay" class="popup-overlay">
   <div id="popupCard" class="popup-card popup-success">
     <h2 id="popupTitle" class="popup-title"></h2>
-    <p id="popupText"></p>
-    <button class="popup-btn" onclick="closePopup()">OK</button>
+    <p id="popupText" class="popup-text"></p>
+    <button type="button" class="popup-btn" onclick="closePopup()">OK</button>
   </div>
 </div>
 
-<footer>© 2025 BMS Maschinenfabrik – Thesis Project</footer>
+<footer>
+  © 2025 BMS Maschinenfabrik – Thesis Project
+</footer>
 
 <script>
-const BACKEND_URL = "https://bms-backend-d1v5.onrender.com/log";
-const $ = id => document.getElementById(id);
-const get = k => new URLSearchParams(location.search).get(k);
+  const BACKEND_URL = "https://bms-backend-d1v5.onrender.com/log";
+  const $ = id => document.getElementById(id);
+  const getParam = k => new URLSearchParams(location.search).get(k);
 
-function nowUnix(){ return Math.floor(Date.now()/1000); }
-function isHex(v){ return /^[0-9a-fA-F]+$/.test(v||""); }
+  const TAMPER_MSG =
+    "The URL appears to have been tampered.\n" +
+    "Please scan the QR code again.";
 
-const REQUIRED = [
-  "MachineName","MachineID","ErrorCode","ErrorText",
-  "iat","exp","nonce","deviceId","sig"
-];
+  function nowUnix(){ return Math.floor(Date.now()/1000); }
+  function isHex(v){ return /^[0-9a-fA-F]+$/.test(v||""); }
 
-function readQR(){
-  const o = {};
-  REQUIRED.forEach(k => o[k] = get(k)||"");
-  return o;
-}
+  const V2_FIELDS = [
+    "MachineName","MachineID","ErrorCode","ErrorText",
+    "iat","exp","nonce","deviceId","sig"
+  ];
 
-function prefill(v){
-  REQUIRED.forEach(k => $(k) && ($(k).value = v[k]));
-}
+  function readV2(){
+    const o = {};
+    V2_FIELDS.forEach(k => o[k] = getParam(k) || "");
+    return o;
+  }
 
-function valid(v){
-  for(const k of REQUIRED) if(!v[k]) return false;
-  if(!isHex(v.sig)) return false;
-  if(nowUnix() > Number(v.exp)) return false;
-  return true;
-}
+  function prefill(v){
+    ["MachineName","MachineID","ErrorCode","ErrorText"].forEach(k => {
+      if (v[k]) $(k).value = v[k];
+    });
+    ["iat","exp","nonce","deviceId","sig"].forEach(k => {
+      if ($(k)) $(k).value = v[k];
+    });
+  }
 
-function popup(type,title,msg){
-  $("popupCard").className = "popup-card popup-"+type;
-  $("popupTitle").textContent = title;
-  $("popupText").textContent = msg;
-  $("popupOverlay").style.display="flex";
-}
+  function clientGate(v){
+    for(const k of V2_FIELDS){
+      if(!v[k]) return false;
+    }
+    if(!isHex(v.sig)) return false;
+    if(nowUnix() > Number(v.exp)) return false;
+    return true;
+  }
 
-function closePopup(){ $("popupOverlay").style.display="none"; }
+  function popup(type,title,msg){
+    $("popupCard").className = "popup-card popup-"+type;
+    $("popupTitle").textContent = title;
+    $("popupText").textContent = msg;
+    $("popupOverlay").style.display="flex";
+  }
+  function closePopup(){ $("popupOverlay").style.display="none"; }
 
-const v = readQR();
-prefill(v);
+  const v2 = readV2();
+  prefill(v2);
 
-if(!valid(v)){
-  popup("error","Request Rejected","The URL is invalid or expired.\nPlease scan the QR code again.");
-}
+  if(!clientGate(v2)){
+    popup("error","Request Rejected",TAMPER_MSG);
+  }
 
-$("contactForm").onsubmit = async e => {
-  e.preventDefault();
-  const cur = readQR();
-  if(!valid(cur)) return popup("error","Rejected","Invalid or expired QR code.");
+  $("contactForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const cur = readV2();
+    if(!clientGate(cur)){
+      popup("error","Request Rejected",TAMPER_MSG);
+      return;
+    }
 
-  const payload = {
-    contact:{ Name:$("name").value, Company:$("company").value },
-    machine: cur
-  };
+    const payload = {
+      contact:{
+        Name: $("name").value || "",
+        Company: $("company").value || ""
+      },
+      machine:{
+        MachineName: cur.MachineName,
+        MachineID:   cur.MachineID,
+        ErrorCode:   cur.ErrorCode,
+        ErrorText:   cur.ErrorText,
+        iat:         cur.iat,
+        exp:         cur.exp,
+        nonce:       cur.nonce,
+        deviceId:    cur.deviceId,
+        sig:         cur.sig.toLowerCase()
+      }
+    };
 
-  const r = await fetch(BACKEND_URL,{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "X-BMS-Signature":cur.sig.toLowerCase()
-    },
-    body:JSON.stringify(payload)
+    const btn = $("submitBtn");
+    btn.disabled = true;
+    btn.textContent = "Sending...";
+
+    try{
+      const r = await fetch(BACKEND_URL,{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "X-BMS-Signature":cur.sig.toLowerCase()
+        },
+        body:JSON.stringify(payload)
+      });
+
+      if(!r.ok){
+        popup("error","Request Rejected",TAMPER_MSG);
+        return;
+      }
+
+      popup("success","Submitted Successfully",
+        "Your request has been submitted successfully.\nWe will contact you as soon as possible."
+      );
+
+      $("name").value="";
+      $("company").value="";
+
+    }catch{
+      popup("error","Communication Error",
+        "A network error occurred.\nPlease try again later."
+      );
+    }finally{
+      btn.disabled=false;
+      btn.textContent="Send";
+    }
   });
-
-  if(!r.ok) return popup("error","Rejected","Verification failed.");
-  popup("success","Submitted","Your request has been sent successfully.");
-};
 </script>
 
 </body>
