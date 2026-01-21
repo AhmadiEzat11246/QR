@@ -12,8 +12,6 @@
       --bg:#f5f7fb;
       --card:#ffffff;
       --border:#e5e7eb;
-
-      /* Popup */
       --popupBlue:#2563eb;
       --successGreen:#2f855a;
       --errorRed:#b91c1c;
@@ -53,12 +51,10 @@
       font-size:1rem;
       color:var(--primary);
       font-weight:700;
-      letter-spacing:0.2px;
     }
 
     nav ul{
       display:flex;
-      flex-wrap:wrap;
       gap:1rem;
       list-style:none;
       margin:0;
@@ -118,7 +114,6 @@
 
     input{
       width:100%;
-      box-sizing:border-box;
       padding:0.75rem;
       border-radius:8px;
       border:1px solid #d1d5db;
@@ -134,7 +129,6 @@
 
     .row.two{
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      align-items:start;
     }
 
     .hint{
@@ -150,14 +144,8 @@
       border:none;
       padding:0.7rem 1.1rem;
       border-radius:999px;
-      font-size:0.95rem;
       font-weight:600;
       cursor:pointer;
-    }
-
-    button.submit-btn[disabled]{
-      opacity:0.75;
-      cursor:not-allowed;
     }
 
     footer{
@@ -169,7 +157,6 @@
       color:#374151;
     }
 
-    /* ===== POPUP ===== */
     .popup-overlay{
       position:fixed;
       inset:0;
@@ -178,42 +165,19 @@
       align-items:center;
       justify-content:center;
       z-index:9999;
-      padding:1rem;
     }
 
     .popup-card{
       background:#fff;
       border-radius:16px;
-      padding:1.8rem 1.6rem 1.5rem;
-      text-align:center;
+      padding:1.6rem;
       width:min(560px, 90%);
-      box-shadow:0 24px 55px rgba(0,0,0,0.22);
-      border:1px solid rgba(229,231,235,0.9);
+      text-align:center;
     }
 
-    .popup-icon{
-      width:72px;
-      height:72px;
-      margin-bottom:0.9rem;
-    }
-
-    .popup-title{
-      margin:0 0 0.4rem;
-      font-family:"Georgia","Times New Roman",serif;
-      font-size:1.35rem;
-      font-weight:600;
-    }
-
+    .popup-title{ font-size:1.3rem; font-weight:600; }
     .popup-success .popup-title{ color:var(--successGreen); }
-    .popup-error   .popup-title{ color:var(--errorRed); }
-
-    .popup-text{
-      font-size:0.95rem;
-      line-height:1.6;
-      color:#374151;
-      margin-bottom:1.2rem;
-      white-space:pre-line;
-    }
+    .popup-error .popup-title{ color:var(--errorRed); }
 
     .popup-btn{
       background:var(--popupBlue);
@@ -221,14 +185,10 @@
       border:none;
       border-radius:6px;
       padding:0.45rem 0.9rem;
-      font-size:0.85rem;
-      font-weight:600;
       cursor:pointer;
-      display:inline-block;
     }
 
-    /* optional: hide hidden inputs without affecting layout */
-    .hidden { display:none !important; }
+    .hidden{ display:none; }
   </style>
 </head>
 
@@ -239,13 +199,6 @@
     <img src="bms-logo.png" alt="BMS Logo">
     <h3>END OF LINE PACKAGING EXPERTS</h3>
   </div>
-  <nav>
-    <ul>
-      <li><a href="#">Produkte</a></li>
-      <li><a href="#">Service</a></li>
-      <li><a href="#">Kontakt</a></li>
-    </ul>
-  </nav>
 </header>
 
 <section class="hero">
@@ -256,231 +209,121 @@
 
   <div class="card">
     <h2>Contact</h2>
-    <form id="contactForm" novalidate>
+    <form id="contactForm">
       <div class="row two">
         <div>
-          <label for="name">Name</label>
-          <input id="name" autocomplete="name">
+          <label>Name</label>
+          <input id="name">
         </div>
         <div>
-          <label for="company">Company</label>
-          <input id="company" autocomplete="organization">
+          <label>Company</label>
+          <input id="company">
         </div>
       </div>
 
       <div class="hint">Machine data is filled automatically from the QR code.</div>
 
-      <!-- Store V2 security params (optional, but useful for debugging / fallback submission) -->
-      <input id="iat" class="hidden" readonly>
-      <input id="exp" class="hidden" readonly>
-      <input id="nonce" class="hidden" readonly>
-      <input id="scope" class="hidden" readonly>
-      <input id="deviceId" class="hidden" readonly>
-      <input id="kid" class="hidden" readonly>
-      <input id="sig" class="hidden" readonly>
+      <!-- Security parameters -->
+      <input id="iat" class="hidden">
+      <input id="exp" class="hidden">
+      <input id="nonce" class="hidden">
+      <input id="deviceId" class="hidden">
+      <input id="sig" class="hidden">
 
-      <button type="submit" class="submit-btn" id="submitBtn">Send</button>
+      <button class="submit-btn">Send</button>
     </form>
   </div>
 
   <div class="card">
     <h2>Machine Data</h2>
     <div class="row">
-      <div><label for="MachineName">Machine Name</label><input id="MachineName" readonly></div>
-      <div><label for="MachineID">Machine ID</label><input id="MachineID" readonly></div>
-      <div><label for="ErrorCode">Error Code</label><input id="ErrorCode" readonly></div>
-      <div><label for="ErrorText">Error Text</label><input id="ErrorText" readonly></div>
-      <!-- Production Line removed (not part of V2 canonical set) -->
+      <input id="MachineName" readonly>
+      <input id="MachineID" readonly>
+      <input id="ErrorCode" readonly>
+      <input id="ErrorText" readonly>
     </div>
   </div>
 
 </div>
 
-<!-- ===== POPUP ===== -->
-<div id="popupOverlay" class="popup-overlay" aria-hidden="true">
-  <div id="popupCard" class="popup-card popup-success" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
-    <svg class="popup-icon" viewBox="0 0 64 64" aria-hidden="true">
-      <rect x="10" y="16" width="44" height="32" rx="6" fill="#2563eb"/>
-      <path d="M14 20 L32 34 L50 20" fill="none" stroke="#fff" stroke-width="4"/>
-    </svg>
+<div id="popupOverlay" class="popup-overlay">
+  <div id="popupCard" class="popup-card popup-success">
     <h2 id="popupTitle" class="popup-title"></h2>
-    <p id="popupText" class="popup-text"></p>
-    <button type="button" id="popupBtn" class="popup-btn">Home Page</button>
+    <p id="popupText"></p>
+    <button class="popup-btn" onclick="closePopup()">OK</button>
   </div>
 </div>
 
-<footer>
-  © 2025 BMS Maschinenfabrik – Thesis Project
-</footer>
+<footer>© 2025 BMS Maschinenfabrik – Thesis Project</footer>
 
 <script>
-  const BACKEND_URL = "https://bms-backend-d1v5.onrender.com/log";
+const BACKEND_URL = "https://bms-backend-d1v5.onrender.com/log";
+const $ = id => document.getElementById(id);
+const get = k => new URLSearchParams(location.search).get(k);
 
-  const $ = (id) => document.getElementById(id);
-  const getParam = (n) => new URLSearchParams(location.search).get(n);
+function nowUnix(){ return Math.floor(Date.now()/1000); }
+function isHex(v){ return /^[0-9a-fA-F]+$/.test(v||""); }
 
-  const TAMPER_MSG =
-    "The URL appears to have been tampered.\n" +
-    "Please scan the QR code again.";
+const REQUIRED = [
+  "MachineName","MachineID","ErrorCode","ErrorText",
+  "iat","exp","nonce","deviceId","sig"
+];
 
-  function openPopup(type, title, msg){
-    $("popupCard").className = "popup-card popup-" + type;
-    $("popupTitle").textContent = title;
-    $("popupText").textContent = msg;
-    $("popupOverlay").style.display = "flex";
-    $("popupOverlay").setAttribute("aria-hidden","false");
-    $("popupBtn").focus();
-  }
+function readQR(){
+  const o = {};
+  REQUIRED.forEach(k => o[k] = get(k)||"");
+  return o;
+}
 
-  function closePopup(){
-    $("popupOverlay").style.display = "none";
-    $("popupOverlay").setAttribute("aria-hidden","true");
-  }
+function prefill(v){
+  REQUIRED.forEach(k => $(k) && ($(k).value = v[k]));
+}
 
-  $("popupBtn").addEventListener("click", closePopup);
-  $("popupOverlay").addEventListener("click", (e) => {
-    if (e.target === $("popupOverlay")) closePopup();
+function valid(v){
+  for(const k of REQUIRED) if(!v[k]) return false;
+  if(!isHex(v.sig)) return false;
+  if(nowUnix() > Number(v.exp)) return false;
+  return true;
+}
+
+function popup(type,title,msg){
+  $("popupCard").className = "popup-card popup-"+type;
+  $("popupTitle").textContent = title;
+  $("popupText").textContent = msg;
+  $("popupOverlay").style.display="flex";
+}
+
+function closePopup(){ $("popupOverlay").style.display="none"; }
+
+const v = readQR();
+prefill(v);
+
+if(!valid(v)){
+  popup("error","Request Rejected","The URL is invalid or expired.\nPlease scan the QR code again.");
+}
+
+$("contactForm").onsubmit = async e => {
+  e.preventDefault();
+  const cur = readQR();
+  if(!valid(cur)) return popup("error","Rejected","Invalid or expired QR code.");
+
+  const payload = {
+    contact:{ Name:$("name").value, Company:$("company").value },
+    machine: cur
+  };
+
+  const r = await fetch(BACKEND_URL,{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "X-BMS-Signature":cur.sig.toLowerCase()
+    },
+    body:JSON.stringify(payload)
   });
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closePopup();
-  });
 
-  function nowUnix() {
-    return Math.floor(Date.now() / 1000);
-  }
-
-  function isHex(str){
-    return typeof str === "string" && /^[0-9a-fA-F]+$/.test(str) && str.length > 0;
-  }
-
-  // Strictly the parameters your backend expects (V2)
-  const V2_FIELDS = [
-    "MachineName","MachineID","ErrorCode","ErrorText",
-    "iat","exp","nonce","scope","deviceId","kid","sig"
-  ];
-
-  function readV2FromUrl(){
-    const o = {};
-    for (const k of V2_FIELDS) o[k] = getParam(k) || "";
-    return o;
-  }
-
-  function prefillUI(v2){
-    // machine fields
-    ["MachineName","MachineID","ErrorCode","ErrorText"].forEach(id => {
-      if (v2[id]) $(id).value = v2[id];
-    });
-
-    // hidden fields (debug/fallback)
-    ["iat","exp","nonce","scope","deviceId","kid","sig"].forEach(id => {
-      if ($(id)) $(id).value = v2[id] || "";
-    });
-  }
-
-  function clientSideGate(v2){
-    // If any required field is missing -> tamper
-    const required = ["MachineName","MachineID","ErrorCode","ErrorText","iat","exp","nonce","scope","deviceId","kid","sig"];
-    for (const k of required){
-      if (!v2[k] || String(v2[k]).trim().length === 0) return false;
-    }
-
-    // Signature format (backend expects hex)
-    if (!isHex(v2.sig)) return false;
-
-    // Expiry check (backend enforces now > exp)
-    const exp = Number(v2.exp);
-    if (!Number.isFinite(exp)) return false;
-    if (nowUnix() > exp) return false;
-
-    // Scope check (backend enforces scope === "submit")
-    if (String(v2.scope) !== "submit") return false;
-
-    return true;
-  }
-
-  const v2 = readV2FromUrl();
-  prefillUI(v2);
-
-  // Optional: show tamper immediately if the QR link is invalid/expired
-  // If you prefer only on submit, comment this block out.
-  if (!clientSideGate(v2)) {
-    openPopup("error", "Request Rejected", TAMPER_MSG);
-  }
-
-  $("contactForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    // Re-check at submit time (important because exp can become invalid while page is open)
-    const currentV2 = readV2FromUrl();
-    if (!clientSideGate(currentV2)) {
-      openPopup("error", "Request Rejected", TAMPER_MSG);
-      return;
-    }
-
-    // Build payload that matches backend expectation: req.body.machine holds the required fields.
-    const payload = {
-      contact: {
-        Name: ($("name").value || "").trim(),
-        Company: ($("company").value || "").trim()
-      },
-      machine: {
-        MachineName: String(currentV2.MachineName),
-        MachineID:   String(currentV2.MachineID),
-        ErrorCode:   String(currentV2.ErrorCode),
-        ErrorText:   String(currentV2.ErrorText),
-        iat:         String(currentV2.iat),
-        exp:         String(currentV2.exp),
-        nonce:       String(currentV2.nonce),
-        scope:       String(currentV2.scope),
-        deviceId:    String(currentV2.deviceId),
-        kid:         String(currentV2.kid),
-
-        // Optional: backend already reads signature from header/body.
-        // Keeping it here is convenient for debugging.
-        sig:         String(currentV2.sig).toLowerCase()
-      }
-    };
-
-    const btn = $("submitBtn");
-    btn.disabled = true;
-    btn.textContent = "Sending...";
-
-    try{
-      const r = await fetch(BACKEND_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-BMS-Signature": String(currentV2.sig).toLowerCase()
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!r.ok) {
-        // 400/401/403 from backend -> tamper / expired / wrong scope / missing fields
-        openPopup("error", "Request Rejected", TAMPER_MSG);
-        return;
-      }
-
-      openPopup(
-        "success",
-        "Submitted Successfully",
-        "Your request has been submitted successfully.\nWe will contact you as soon as possible."
-      );
-
-      $("name").value = "";
-      $("company").value = "";
-
-    } catch {
-      openPopup(
-        "error",
-        "Communication Error",
-        "A network error occurred while sending the request.\nPlease try again later."
-      );
-    } finally {
-      btn.disabled = false;
-      btn.textContent = "Send";
-    }
-  });
+  if(!r.ok) return popup("error","Rejected","Verification failed.");
+  popup("success","Submitted","Your request has been sent successfully.");
+};
 </script>
 
 </body>
